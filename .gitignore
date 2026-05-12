@@ -1,0 +1,21 @@
+# Build outputs
+build/
+*.o
+*.exe
+*.out
+
+# IDE folders
+.vs/
+.vscode/
+.idea/
+*.user
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Large binary assets (use Git LFS instead)
+*.png
+*.jpg
+*.obj
+*.fbx
