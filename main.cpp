@@ -14,6 +14,47 @@
 using namespace glm;
 using namespace std;
 
+
+// camer orientation variables
+static float camYaw = -90.0f;
+static float camPitch = 0.0f;
+static float lastX = 750.0f;  
+static float lastY = 500.0f;  
+static bool  firstMouse = true;
+static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+
+
+static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
+    if (firstMouse){
+        lastX = (float)xpos;
+        lastY = (float)ypos;
+        firstMouse = false;
+    }
+    float xoffset = (float) xpos - lastX;
+    float yoffset = lastY - (float)ypos; 
+    lastX = (float)xpos;
+    lastY = (float)ypos;
+
+    const float sensitivity = 0.07f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    camYaw   += xoffset;
+    camPitch += yoffset;
+
+    // clamp to avoid camera flip
+    if (camPitch >  89.0f) 
+        camPitch =  89.0f;
+    if (camPitch < -89.0f) 
+        camPitch = -89.0f;
+
+    glm::vec3 dir;
+    dir.x = cos(glm::radians(camYaw)) * cos(glm::radians(camPitch));
+    dir.y = sin(glm::radians(camPitch));
+    dir.z = sin(glm::radians(camYaw)) * cos(glm::radians(camPitch));
+    cameraFront = glm::normalize(dir);
+}
+
 const char *getError()
 {
     const char *errorDescription;
@@ -102,6 +143,8 @@ int main()
         std::cout << "Calling setUp()" <<std::endl;
         window = setUp();
         std::cout << "setUp() complete" <<std::endl;
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, processMouseMovement);
     }
     catch (const char *e)
     {
@@ -153,7 +196,7 @@ int main()
         SkyBox skybox(faces);
 
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
-        glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+        
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
         int fbWidth, fbHeight;
@@ -176,7 +219,13 @@ int main()
             glUniformMatrix4fv(viewLoc,       1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
+            
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
+            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+                // pres ESC to release cursour
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                firstMouse = true;  
+            }
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
