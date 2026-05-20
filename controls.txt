@@ -1,0 +1,19 @@
+W - Move Scene Up
+A - Move Scene Left
+S - Move Scene Down
+D - Move Scene Right
+
+T - Move Scene Up Slowly
+F - Move Scene Down Slowly
+
+Q - Rotate Scene CCW
+E - Rotate Scene CW
+
++ - Zoom In
+- - Zoom Out
+
+C - Rotate Camera CW [Scene Moves CCW]
+Z - Rotate Camera CCW [Scene Moves CW]
+
+R - Reset
+Esc - Mouse Movement [Broke]

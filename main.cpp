@@ -23,6 +23,135 @@ static float lastY = 500.0f;
 static bool  firstMouse = true;
 static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
+mat4 makeMVP(mat4 M, mat4 V, mat4 P) {
+    return (P * (V * M));
+}
+
+static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, glm::vec3 &cameraPos, glm::vec3 &cameraUp) {
+
+    // Mouse-based movement
+    // !! BROKEN !!
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        // pres ESC to release cursour
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        firstMouse = true;  
+    }
+
+    // Left-Front-Right-Back Movement
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, 0.01, 0, 1);
+        model = translation * model;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, -0.01, 0, 1);
+        model = translation * model;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0.01, 0, 0, 1);
+        model = translation * model;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(-0.01, 0, 0, 1);
+        model = translation * model;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    // Scene Center Rotation
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, 0.01f, glm::vec3(0.0, 1.0, 0.0));
+        model = model * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, -0.01f, glm::vec3(0.0, 1.0, 0.0));
+        model = model * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    // View Center Rotation
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    {
+        view = glm::rotate(view, 0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        view = glm::rotate(view, -0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+        MVP = makeMVP(model, view, projection);
+        cameraAngle -= 0.0001f;
+    }
+
+    // Up-Down Movement
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, 0, 0.01, 1);
+        model = translation * model;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, 0, -0.01, 1);
+        model = translation * model;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    // Scene Scaling
+    if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[0] = vec4(0.99, 0, 0, 0);
+        translation[1] = vec4(0, 0.99, 0, 0);
+        translation[2] = vec4(0, 0, 0.99, 0);
+        model = model * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[0] = vec4(1.01, 0, 0, 0);
+        translation[1] = vec4(0, 1.01, 0, 0);
+        translation[2] = vec4(0, 0, 1.01, 0);
+        model = model * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        int fbWidth, fbHeight;
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+        float aspect = (float)fbWidth / (float)fbHeight;
+
+        model = mat4(1.0f);
+        cameraAngle = 0.0f;
+        cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
+        view = lookAt(
+            cameraPos,               // Camera position
+            cameraPos + cameraFront, // Look at point
+            cameraUp                 // Up vector
+        );
+        projection = perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+
+        MVP = makeMVP(model, view, projection);
+    }
+}
 
 static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
     if (firstMouse){
@@ -195,8 +324,8 @@ int main()
         };
         SkyBox skybox(faces);
 
+        float cameraAngle = 0.0f;
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
-        
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
         int fbWidth, fbHeight;
@@ -206,26 +335,26 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
+        glm::mat4 model(1.0f);
+        glm::mat4 view       = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+
+        mat4 MVP = makeMVP(model, view, projection);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glUseProgram(programId);
 
             //glUniform4f(colourLoc, 1.0f, 0.0f, 0.0f, 1.0f);
-            glm::mat4 view       = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+            
             glUseProgram(programId);
             glUniformMatrix4fv(viewLoc,       1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
             
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
-            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-                // pres ESC to release cursour
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                firstMouse = true;  
-            }
+            processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp);    
+        
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
