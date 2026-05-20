@@ -23,11 +23,14 @@ static float lastY = 500.0f;
 static bool  firstMouse = true;
 static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
+static double lastTime, currentTime, deltaTime;
+
 mat4 makeMVP(mat4 M, mat4 V, mat4 P) {
     return (P * (V * M));
 }
 
 static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, glm::vec3 &cameraPos, glm::vec3 &cameraUp) {
+    double speed = 0.5 * deltaTime;
 
     // Mouse-based movement
     // !! BROKEN !!
@@ -41,28 +44,28 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[3] = vec4(0, 0.01, 0, 1);
+        translation[3] = vec4(0, speed, 0, 1);
         model = translation * model;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[3] = vec4(0, -0.01, 0, 1);
+        translation[3] = vec4(0, -speed, 0, 1);
         model = translation * model;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[3] = vec4(0.01, 0, 0, 1);
+        translation[3] = vec4(speed, 0, 0, 1);
         model = translation * model;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[3] = vec4(-0.01, 0, 0, 1);
+        translation[3] = vec4(-speed, 0, 0, 1);
         model = translation * model;
         MVP = makeMVP(model, view, projection);
     }
@@ -71,14 +74,14 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, 0.01f, glm::vec3(0.0, 1.0, 0.0));
+        translation = glm::rotate(translation, float(speed), glm::vec3(0.0, 1.0, 0.0));
         model = model * translation;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, -0.01f, glm::vec3(0.0, 1.0, 0.0));
+        translation = glm::rotate(translation, -float(speed), glm::vec3(0.0, 1.0, 0.0));
         model = model * translation;
         MVP = makeMVP(model, view, projection);
     }
@@ -86,12 +89,12 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     // View Center Rotation
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
-        view = glm::rotate(view, 0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, float(speed), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
-        view = glm::rotate(view, -0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, -float(speed), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
         cameraAngle -= 0.0001f;
     }
@@ -100,14 +103,14 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[3] = vec4(0, 0, 0.01, 1);
+        translation[3] = vec4(0, 0, float(speed), 1);
         model = translation * model;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[3] = vec4(0, 0, -0.01, 1);
+        translation[3] = vec4(0, 0, -float(speed), 1);
         model = translation * model;
         MVP = makeMVP(model, view, projection);
     }
@@ -116,18 +119,18 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[0] = vec4(0.99, 0, 0, 0);
-        translation[1] = vec4(0, 0.99, 0, 0);
-        translation[2] = vec4(0, 0, 0.99, 0);
+        translation[0] = vec4((1 - speed), 0, 0, 0);
+        translation[1] = vec4(0, (1 - speed), 0, 0);
+        translation[2] = vec4(0, 0, (1 - speed), 0);
         model = model * translation;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation[0] = vec4(1.01, 0, 0, 0);
-        translation[1] = vec4(0, 1.01, 0, 0);
-        translation[2] = vec4(0, 0, 1.01, 0);
+        translation[0] = vec4((1 + speed), 0, 0, 0);
+        translation[1] = vec4(0, (1 + speed), 0, 0);
+        translation[2] = vec4(0, 0, (1 + speed), 0);
         model = model * translation;
         MVP = makeMVP(model, view, projection);
     }
@@ -290,6 +293,7 @@ int main()
     //Add code here
     
     try {
+        lastTime = glfwGetTime();
         
         GLuint programId = LoadShaders("vertex.glsl", "fragment.glsl");
 
@@ -353,10 +357,16 @@ int main()
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
             
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
+
+            currentTime = glfwGetTime();
+            deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
             processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp);    
         
             glfwSwapBuffers(window);
             glfwPollEvents();
+
+            //cout << "FPS: " << 1 / deltaTime << endl;
         }
     } catch (const char* e) {
         cout << e << endl;
