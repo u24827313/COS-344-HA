@@ -1,13 +1,10 @@
-W - Move Scene Up
-A - Move Scene Left
-S - Move Scene Down
-D - Move Scene Right
+W - Move Camera Up
+A - Move Camera Left
+S - Move Camera Down
+D - Move Camera Right
 
-T - Move Scene Up Slowly
-F - Move Scene Down Slowly
-
-Q - Rotate Scene CCW
-E - Rotate Scene CW
+T - Move Camera Up Slowly
+F - Move Camera Down Slowly
 
 + - Zoom In
 - - Zoom Out

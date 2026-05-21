@@ -10,6 +10,7 @@
 #include "shader.hpp"
 
 #include "SkyBox.h"
+#include "src/builders/Shapes3D.h"
 
 using namespace glm;
 using namespace std;
@@ -45,33 +46,33 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     {
         mat4 translation = mat4(1.0f);
         translation[3] = vec4(0, speed, 0, 1);
-        model = translation * model;
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
         translation[3] = vec4(0, -speed, 0, 1);
-        model = translation * model;
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
         translation[3] = vec4(speed, 0, 0, 1);
-        model = translation * model;
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
         translation[3] = vec4(-speed, 0, 0, 1);
-        model = translation * model;
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
 
-    // Scene Center Rotation
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    // Scene Center Rotation (legacy)
+    /*if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
         translation = glm::rotate(translation, float(speed), glm::vec3(0.0, 1.0, 0.0));
@@ -84,17 +85,17 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation = glm::rotate(translation, -float(speed), glm::vec3(0.0, 1.0, 0.0));
         model = model * translation;
         MVP = makeMVP(model, view, projection);
-    }
+    }*/
 
     // View Center Rotation
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-    {
-        view = glm::rotate(view, float(speed), glm::vec3(0.0f, 1.0f, 0.0f));
-        MVP = makeMVP(model, view, projection);
-    }
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
         view = glm::rotate(view, -float(speed), glm::vec3(0.0f, 1.0f, 0.0f));
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        view = glm::rotate(view, float(speed), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
         cameraAngle -= 0.0001f;
     }
@@ -104,14 +105,14 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     {
         mat4 translation = mat4(1.0f);
         translation[3] = vec4(0, 0, float(speed), 1);
-        model = translation * model;
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
         translation[3] = vec4(0, 0, -float(speed), 1);
-        model = translation * model;
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
 
@@ -122,7 +123,7 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[0] = vec4((1 - speed), 0, 0, 0);
         translation[1] = vec4(0, (1 - speed), 0, 0);
         translation[2] = vec4(0, 0, (1 - speed), 0);
-        model = model * translation;
+        view = view * translation;
         MVP = makeMVP(model, view, projection);
     }
     if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS)
@@ -131,7 +132,7 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[0] = vec4((1 + speed), 0, 0, 0);
         translation[1] = vec4(0, (1 + speed), 0, 0);
         translation[2] = vec4(0, 0, (1 + speed), 0);
-        model = model * translation;
+        view = view * translation;
         MVP = makeMVP(model, view, projection);
     }
 
@@ -143,16 +144,32 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
 
         model = mat4(1.0f);
         cameraAngle = 0.0f;
-        cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        //cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        cameraPos = glm::vec3(0.0f, 0.5f, -2.0f);
         cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
         view = lookAt(
             cameraPos,               // Camera position
             cameraPos + cameraFront, // Look at point
             cameraUp                 // Up vector
         );
-        projection = perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+        projection = perspective(glm::radians(45.0f), aspect, 1.0f, -500.0f);
 
         MVP = makeMVP(model, view, projection);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, 0.01f, glm::vec3(1.0, 0.0, 0.0));
+        view = view * translation;
+        MVP = Shapes3D::MVPMatrixCreator(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, -0.01f, glm::vec3(1.0, 0.0, 0.0));
+        view = view * translation;
+        MVP = Shapes3D::MVPMatrixCreator(model, view, projection);
     }
 }
 
@@ -297,6 +314,14 @@ int main()
         
         GLuint programId = LoadShaders("vertex.glsl", "fragment.glsl");
 
+        GLuint VertexArrayID;
+        glGenVertexArrays(1, &VertexArrayID);
+        glBindVertexArray(VertexArrayID);
+
+        GLuint vertexbuffer;
+        glGenBuffers(1, &vertexbuffer);
+        GLuint colorbuffer;
+        glGenBuffers(1, &colorbuffer);
         
         // get uniform locations
         GLint modelLoc      = glGetUniformLocation(programId, "model");
@@ -329,7 +354,8 @@ int main()
         SkyBox skybox(faces);
 
         float cameraAngle = 0.0f;
-        glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
+        //glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.5f, -2.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
         int fbWidth, fbHeight;
@@ -341,9 +367,11 @@ int main()
 
         glm::mat4 model(1.0f);
         glm::mat4 view       = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 1.0f, -500.0f);
 
         mat4 MVP = makeMVP(model, view, projection);
+
+        Shapes3D::Shape *shp = new Shapes3D::Scene(cameraPos);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS) {
@@ -351,10 +379,49 @@ int main()
             glUseProgram(programId);
 
             //glUniform4f(colourLoc, 1.0f, 0.0f, 0.0f, 1.0f);
+
+            vector<vec4> worldVertices = Shapes3D::applyMatrix(shp->getVertices(), MVP);
+            GLfloat *vertices = Shapes3D::toGLfloat(worldVertices);
+            GLfloat *colors = Shapes3D::toGLfloat(shp->getColours());
             
             glUseProgram(programId);
             glUniformMatrix4fv(viewLoc,       1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+            glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat[shp->numVertices()]), vertices, GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat[shp->numColors()]), colors, GL_STATIC_DRAW);
+
+            // Here we enable the VAO and populate it.
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+            glVertexAttribPointer(
+                0,        // location 0 in the vertex shader.
+                4,        // size
+                GL_FLOAT, // type
+                GL_FALSE, // normalized?
+                0,        // stride
+                (void *)0 // array buffer offset
+            );
+
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+            glVertexAttribPointer(
+                1,        // location 1 in the vertex shader.
+                3,        // size
+                GL_FLOAT, // type
+                GL_FALSE, // normalized?
+                0,        // stride
+                (void *)0 // array buffer offset
+            );
+
+            int temp = shp->numVertices();
+            glDrawArrays(GL_TRIANGLES, 0, shp->numVertices()); // Starting from vertex 0; 3 vertices total -> 1 triangle
+
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
             
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
 
