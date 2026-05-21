@@ -1,15 +1,12 @@
-files = shader.cpp SkyBox.cpp
+CXX      = g++
+CXXFLAGS = -g -Wall
+LDFLAGS  = -lglfw3 -lGLEW -pthread -ldl -lGL
 
-SRC = main.cpp 
-main: main.cpp
-	g++ -g main.cpp $(files) -lglfw3 -lGLEW -pthread -ldl -lGL -o main
+SOURCES = main.cpp shader.cpp SkyBox.cpp Terrain.cpp
+TARGET  = main2
+
+$(TARGET): $(SOURCES)
+	$(CXX) $(CXXFLAGS) $(SOURCES) $(LDFLAGS) -o $(TARGET)
+
 clean:
-	rm -f *.o main
-
-run:
-	./main
-
-all:
-	make clean
-	make
-	make run
+	rm -f $(TARGET)
