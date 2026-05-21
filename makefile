@@ -1,4 +1,4 @@
-files = shader.cpp SkyBox.cpp
+files = shader.cpp SkyBox.cpp src/builders/Shapes3D.cpp Terrain.cpp
 
 SRC = main.cpp 
 main: main.cpp
