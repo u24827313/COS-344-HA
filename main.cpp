@@ -9,6 +9,7 @@
 
 #include "shader.hpp"
 
+#include "Terrain.h"
 #include "SkyBox.h"
 
 using namespace glm;
@@ -170,10 +171,6 @@ int main()
         GLint viewLoc       = glGetUniformLocation(programId, "view");
         GLint projectionLoc = glGetUniformLocation(programId, "projection");
         GLint colourLoc     = glGetUniformLocation(programId, "shapeColour");
-        GLint lightDirLoc   = glGetUniformLocation(programId, "lightDirection");
-        GLint lightColLoc   = glGetUniformLocation(programId, "lightColour");
-        GLint viewPosLoc    = glGetUniformLocation(programId, "viewPos");
-        GLint objColLoc     = glGetUniformLocation(programId, "objectColour");
         
         
         std::cout << "modelLoc: " << modelLoc << std::endl;
@@ -181,10 +178,27 @@ int main()
         std::cout << "projectionLoc: " << projectionLoc << std::endl;
         std::cout << "colourLoc: " << colourLoc << std::endl;
         
-
-        float rotX = 0.0f, rotY = 0.0f, rotZ = 0.0f;
-        float transX = 0.0f, transY = 0.0f, transZ = 0.0f;
     
+        // light
+        DirectionalLight sun;
+        sun.direction = glm::normalize(glm::vec3(-0.3f, -1.0f, -0.2f));
+        sun.colour    = glm::vec3(1.0f, 0.95f, 0.85f);
+        sun.ambient   = 0.25f;
+        // object instantiation
+        Terrain terrain(
+            "assets/terrain/grass.bmp",
+            "assets/terrain/dirt.bmp",
+            "assets/terrain/stone.bmp",
+            "assets/terrain/concrete.bmp",
+            "assets/terrain/wood.bmp",
+            200,
+            500.0f
+        );
+        // design the terrain
+        terrain.addMound(30.0f, 80.0f, 15.0f, 3.0f);
+        terrain.addRaisedRect(-5.0f, -5.0f, 5.0f, 5.0f, 1.5f);
+        terrain.addBunker(-12.0f, 50.0f, 6.0f, 2.5f);
+        terrain.build();
         std::vector<std::string> faces = {
             "assets/skybox/Daylight Box_Right.bmp",
             "assets/skybox/Daylight Box_Left.bmp",
@@ -196,7 +210,6 @@ int main()
         SkyBox skybox(faces);
 
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
-        
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
         int fbWidth, fbHeight;
@@ -207,25 +220,29 @@ int main()
         glDisable(GL_CULL_FACE);
 
 
+        float cameraSpeed = 0.3f;  // tune to taste
+        glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glUseProgram(programId);
 
-            //glUniform4f(colourLoc, 1.0f, 0.0f, 0.0f, 1.0f);
             glm::mat4 view       = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
-            glUseProgram(programId);
-            glUniformMatrix4fv(viewLoc,       1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-            
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
+            terrain.render(glm::value_ptr(view), glm::value_ptr(projection), cameraPos, sun);
+
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-                // pres ESC to release cursour
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                firstMouse = true;  
+                firstMouse = true;
             }
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= cameraSpeed * right;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += cameraSpeed * right;
+            if (glfwGetKey(window, GLFW_KEY_SPACE)        == GLFW_PRESS) cameraPos += cameraSpeed * cameraUp;
+            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)   == GLFW_PRESS) cameraPos -= cameraSpeed * cameraUp;
+
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
