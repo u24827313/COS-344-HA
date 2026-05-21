@@ -196,7 +196,7 @@ int main()
         );
         // design the terrain
         terrain.addMound(30.0f, 80.0f, 15.0f, 3.0f);
-        terrain.addRaisedRect(-5.0f, -5.0f, 5.0f, 5.0f, 1.5f);
+        
         terrain.addBunker(-12.0f, 50.0f, 6.0f, 2.5f);
         terrain.build();
         std::vector<std::string> faces = {
