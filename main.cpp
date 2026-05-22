@@ -187,7 +187,7 @@ int main()
         // object instantiation
         Terrain terrain(
             "assets/terrain/grass.bmp",
-            "assets/terrain/dirt.bmp",
+            "assets/terrain/sand.bmp",
             "assets/terrain/stone.bmp",
             "assets/terrain/concrete.bmp",
             "assets/terrain/wood.bmp",
@@ -195,9 +195,13 @@ int main()
             500.0f
         );
         // design the terrain
+        terrain.addBunker(30.0f, 80.0f, 15.0f, 4.0f);
         terrain.addMound(30.0f, 80.0f, 15.0f, 3.0f);
-        
+    
         terrain.addBunker(-12.0f, 50.0f, 6.0f, 2.5f);
+        terrain.addMound(-12.0f, 50.0f, 6.0f, -1.5f);
+
+        terrain.addBunker(0.0f,0.0f,30.0f, 13.5f);
         terrain.build();
         std::vector<std::string> faces = {
             "assets/skybox/Daylight Box_Right.bmp",
