@@ -362,6 +362,24 @@ void Terrain::render(const float* view4x4, const float* proj4x4, const glm::vec3
     glDrawArrays(GL_TRIANGLES, 0, vertexCount);
     glBindVertexArray(0);
 
+    
+    glUniform1f(glGetUniformLocation(shaderProgram, "worldHalfSize"), worldSize * 0.5f);
+
+    
+    int n = (int)bunkers.size();
+    if (n > 32) n = 32;
+    glUniform1i(glGetUniformLocation(shaderProgram, "numBunkers"), n);
+
+
+    std::vector<float> packed(32 * 4, 0.0f);
+    for (int i = 0; i < n; ++i) {
+        packed[i*4 + 0] = bunkers[i].cx;
+        packed[i*4 + 1] = bunkers[i].cz;
+        packed[i*4 + 2] = bunkers[i].radius;
+        packed[i*4 + 3] = bunkers[i].edgeFade;
+    }
+    glUniform4fv(glGetUniformLocation(shaderProgram, "bunkers"), 32, packed.data());
+
     // reset texture bindingds
     for (int i = 0; i < 6; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
