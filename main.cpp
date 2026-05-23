@@ -9,8 +9,12 @@
 
 #include "shader.hpp"
 
+#include "TextureLoader.h"
 #include "Terrain.h"
 #include "SkyBox.h"
+#include "Hole.h"
+#include "GolfCourse.h"
+#include "RenderObject.h"
 
 using namespace glm;
 using namespace std;
@@ -135,6 +139,9 @@ inline GLFWwindow *setUp(){
     return window;
 }
 
+
+
+
 int main()
 {
     GLFWwindow *window;
@@ -184,7 +191,16 @@ int main()
         sun.direction = glm::normalize(glm::vec3(-0.3f, -1.0f, -0.2f));
         sun.colour    = glm::vec3(1.0f, 0.95f, 0.85f);
         sun.ambient   = 0.25f;
-        // object instantiation
+        //
+        GolfCourse course(
+            "assets/terrain/grass.bmp",
+            "assets/terrain/dirt.bmp",
+            "assets/terrain/stone.bmp",
+            "assets/terrain/concrete.bmp",
+            "assets/terrain/wood.bmp"
+        );
+        
+        /*// object instantiation
         Terrain terrain(
             "assets/terrain/grass.bmp",
             "assets/terrain/sand.bmp",
@@ -202,7 +218,7 @@ int main()
         terrain.addMound(-12.0f, 50.0f, 6.0f, -1.5f);
 
         terrain.addBunker(0.0f,0.0f,30.0f, 13.5f);
-        terrain.build();
+        terrain.build();*/
         std::vector<std::string> faces = {
             "assets/skybox/Daylight Box_Right.bmp",
             "assets/skybox/Daylight Box_Left.bmp",
@@ -213,9 +229,51 @@ int main()
         };
         SkyBox skybox(faces);
 
+        // holes
+        GLuint objectShader = LoadShaders("shaders/vertex.glsl", "shaders/fragment.glsl");
+        GLuint flagTexture  = loadBMPTexture("assets/course/white.bmp");
+        GLuint poleTexture  = loadBMPTexture("assets/course/wood.bmp");
+        GLuint ballTexture  = loadBMPTexture("assets/course/white.bmp");
+
+        // build a flag stick
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
+        auto* flagstick = new RenderObject(
+        RenderObject::createCylinder(12),
+            poleTexture,
+            objectShader
+        );
+        flagstick->setPosition(glm::vec3(0.0f, 0.0f, 100.0f));   // at the pin
+        flagstick->setScale(glm::vec3(0.1f, 3.0f, 0.1f));        // thin and tall
+
+        auto* flag = new RenderObject(
+            RenderObject::createQuad(),
+            flagTexture,
+            objectShader
+        );
+        flag->setPosition(glm::vec3(0.5f, 2.7f, 100.0f));
+        flag->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));         // stand it up vertically
+        flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
+
+        // Add them to Hole 1
+        Hole* hole1 = new Hole(1, 4, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        hole1->addObject(flagstick);
+        hole1->addObject(flag);
+        course.addHole(std::unique_ptr<Hole>(hole1));
+        auto* ball = new RenderObject(
+            RenderObject::createSphere(16, 16),
+            ballTexture,
+            objectShader
+        );
+        ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
+        ball->setScale(glm::vec3(0.4f)); 
+        hole1->addObject(ball);
+        course.addHole(std::unique_ptr<Hole>(hole1));
+
+        // add course terrain
+        course.build();
+
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
         float aspect = (float)fbWidth / (float)fbHeight;
@@ -234,7 +292,7 @@ int main()
             glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
 
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
-            terrain.render(glm::value_ptr(view), glm::value_ptr(projection), cameraPos, sun);
+            course.render(glm::value_ptr(view), glm::value_ptr(projection), cameraPos, sun);
 
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
