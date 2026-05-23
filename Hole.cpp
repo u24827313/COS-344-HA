@@ -10,7 +10,7 @@ Hole::~Hole() {
     }
 }
 
-Hole::Hole(Hole&& other) noexcept: holeNumber(other.holeNumber), par(other.par), teePosition(other.teePosition), pinPosition(other.pinPosition), objects(std::move(other.objects)), bunkerIndices(std::move(other.bunkerIndices)){
+Hole::Hole(Hole&& other) noexcept: holeNumber(other.holeNumber), teePosition(other.teePosition), pinPosition(other.pinPosition), objects(std::move(other.objects)), bunkerIndices(std::move(other.bunkerIndices)){
 }
 
 Hole& Hole::operator=(Hole&& other) noexcept {
