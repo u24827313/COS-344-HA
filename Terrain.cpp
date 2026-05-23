@@ -1,5 +1,6 @@
 #include "Terrain.h"
 #include "shader.hpp"
+#include "MathUtils.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -332,15 +333,15 @@ void Terrain::render(const float* view4x4, const float* proj4x4, const glm::vec3
 
     // Matrices
     glm::mat4 model(1.0f);  
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"),      1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"),      1, GL_FALSE, &model[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"),       1, GL_FALSE, view4x4);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, proj4x4);
 
     // Lighting
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightDirection"), 1, glm::value_ptr(light.direction));
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightColour"), 1, glm::value_ptr(light.colour));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightDirection"), 1, &light.direction[0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightColour"), 1,  &light.colour[0]);
     glUniform1f (glGetUniformLocation(shaderProgram, "lightAmbient"), light.ambient);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(cameraPos)); 
+    glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, &cameraPos[0]); 
     glUniform1f(glGetUniformLocation(shaderProgram, "tileFactor"), 50.0f);
 
     // Assign textures to texture units

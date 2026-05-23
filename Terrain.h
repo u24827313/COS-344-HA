@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
 #include "Light.h"
 
