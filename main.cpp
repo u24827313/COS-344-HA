@@ -3,19 +3,18 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "shader.hpp"
+#include "src/shader.hpp"
 
-#include "TextureLoader.h"
-#include "Terrain.h"
-#include "SkyBox.h"
-#include "Hole.h"
-#include "GolfCourse.h"
-#include "RenderObject.h"
-#include "MathUtils.h"
+#include "src/TextureLoader.h"
+#include "src/Terrain.h"
+#include "src/SkyBox.h"
+#include "src/Hole.h"
+#include "src/GolfCourse.h"
+#include "src/RenderObject.h"
+#include "src/MathUtils.h"
 
 using namespace glm;
 using namespace std;
-
 
 // camer orientation variables
 static float camYaw = -90.0f;
@@ -25,6 +24,131 @@ static float lastY = 500.0f;
 static bool  firstMouse = true;
 static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
+static double lastTime, currentTime, deltaTime;
+int state = 0;
+double delay = 0.0;
+
+mat4 makeMVP(mat4 M, mat4 V, mat4 P) {
+    return (P * (V * M));
+}
+
+static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp) {
+    double speed = 5 * deltaTime;
+
+    // Left-Front-Right-Back Movement
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, 0, speed, 1);
+        view = translation * view;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, 0, -speed, 1);
+        view = translation * view;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(-speed, 0, 0, 1);
+        view = translation * view;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(speed, 0, 0, 1);
+        view = translation * view;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    // View Center Rotation
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        view = glm::rotate(view, -float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        view = glm::rotate(view, float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
+        MVP = makeMVP(model, view, projection);
+        cameraAngle -= 0.0001f;
+    }
+
+    // Up-Down Movement
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, -speed, 0, 1);
+        view = translation * view;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[3] = vec4(0, speed, 0, 1);
+        view = translation * view;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    // Scene Scaling
+    if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[0] = vec4((1 - speed / 10), 0, 0, 0);
+        translation[1] = vec4(0, (1 - speed / 10), 0, 0);
+        translation[2] = vec4(0, 0, (1 - speed / 10), 0);
+        view = view * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation[0] = vec4((1 + speed / 10), 0, 0, 0);
+        translation[1] = vec4(0, (1 + speed / 10), 0, 0);
+        translation[2] = vec4(0, 0, (1 + speed / 10), 0);
+        view = view * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        int fbWidth, fbHeight;
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+        float aspect = (float)fbWidth / (float)fbHeight;
+
+        model = mat4(1.0f);
+        cameraAngle = 0.0f;
+        cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
+        view = lookAt(
+            cameraPos,               // Camera position
+            cameraPos + cameraFront, // Look at point
+            cameraUp                 // Up vector
+        );
+        projection = perspective(glm::radians(45.0f), aspect, 1.0f, -500.0f);
+
+        MVP = makeMVP(model, view, projection);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, 0.01f, glm::vec3(1.0, 0.0, 0.0));
+        view = view * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, -0.01f, glm::vec3(1.0, 0.0, 0.0));
+        view = view * translation;
+        MVP = makeMVP(model, view, projection);
+    }
+}
 
 static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
     if (firstMouse){
@@ -135,9 +259,6 @@ inline GLFWwindow *setUp(){
     return window;
 }
 
-
-
-
 int main()
 {
     GLFWwindow *window;
@@ -166,7 +287,7 @@ int main()
     
     try {
         
-        GLuint programId = LoadShaders("vertex.glsl", "fragment.glsl");
+        GLuint programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
 
         
         // get uniform locations
@@ -226,7 +347,7 @@ int main()
         SkyBox skybox(faces);
 
         // holes
-        GLuint objectShader = LoadShaders("shaders/vertex.glsl", "shaders/fragment.glsl");
+        GLuint objectShader = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
         GLuint flagTexture  = loadBMPTexture("assets/course/white.bmp");
         GLuint poleTexture  = loadBMPTexture("assets/course/wood.bmp");
         GLuint ballTexture  = loadBMPTexture("assets/course/white.bmp");
@@ -277,29 +398,91 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
-
-        float cameraSpeed = 0.3f;  // tune to taste
-        glm::vec3 right = glm::normalize(glm::cross(cameraFront, cameraUp));
+        float cameraAngle = 0.0f;
+        glm::mat4 model(1.0f);
+        
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        while (!glfwWindowShouldClose(window)) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glm::mat4 view       = makeLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            glm::mat4 projection = makePerspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+        glm::mat4 view       = makeLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 projection = makePerspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+        mat4 MVP = makeMVP(model, view, projection);
+
+        while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             skybox.render(&view[0][0], &projection[0][0]);
             course.render(&view[0][0], &projection[0][0], cameraPos, sun);
 
-            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                firstMouse = true;
+            currentTime = glfwGetTime();
+            deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+
+            processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp);
+
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && currentTime - delay > 0.5)
+            {
+                delay = currentTime;
+            
+                switch (state) {
+                    case 0 : {
+                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
+                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
+                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl"));
+                        state++;
+                        break;
+                    }
+                    case 1 : {
+                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl");
+                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_invert.glsl"));
+                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_invert.glsl"),
+                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl"));
+                        state++;
+                        break;
+                    }
+                    case 2 : {
+                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl");
+                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_monochrome.glsl"));
+                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_monochrome.glsl"),
+                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl"));
+                        state++;
+                        break;
+                    }
+                    case 3 : {
+                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl");
+                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftdown.glsl"));
+                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftdown.glsl"),
+                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl"));
+                        state++;
+                        break;
+                    }
+                    case 4 : {
+                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl");
+                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftup.glsl"));
+                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftup.glsl"),
+                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl"));
+                        state++;
+                        break;
+                    }
+                    case 5 : {
+                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
+                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
+                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_fragment.glsl"),
+                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl"));
+                        state = 0;
+                        break;
+                    }
+                }
             }
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
-            if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
-            if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= cameraSpeed * right;
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += cameraSpeed * right;
-            if (glfwGetKey(window, GLFW_KEY_SPACE)        == GLFW_PRESS) cameraPos += cameraSpeed * cameraUp;
-            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)   == GLFW_PRESS) cameraPos -= cameraSpeed * cameraUp;
+
+            // Night View
+            if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+            {
+                mat4 translation = mat4(1.0f);
+                translation = glm::rotate(translation, -0.01f, glm::vec3(1.0, 0.0, 0.0));
+                view = view * translation;
+                MVP = makeMVP(model, view, projection);
+            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
