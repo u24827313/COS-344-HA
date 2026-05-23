@@ -9,12 +9,11 @@
 
 class GolfCourse {
     private:
-        
+        Terrain terrain;
         std::vector<std::unique_ptr<Hole>> holes;
         int currentHole;
-
     public:
-        Terrain terrain;
+        
         // Pass terrain texture paths through.
         GolfCourse(const std::string& grassPath,
                    const std::string& sandPath,
