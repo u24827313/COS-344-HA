@@ -1,8 +1,8 @@
 CXX      = g++
 CXXFLAGS = -g -Wall
-LDFLAGS  = -lglfw3 -lGLEW -pthread -ldl -lGL
+LDFLAGS  = -lglfw -lGLEW -pthread -ldl -lGL
 
-SOURCES = main.cpp shader.cpp SkyBox.cpp Terrain.cpp
+SOURCES = main.cpp shader.cpp SkyBox.cpp Terrain.cpp Drone.cpp
 TARGET  = main2
 
 $(TARGET): $(SOURCES)

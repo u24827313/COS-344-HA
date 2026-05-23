@@ -11,6 +11,7 @@
 
 #include "Terrain.h"
 #include "SkyBox.h"
+#include "Drone.h"
 
 using namespace glm;
 using namespace std;
@@ -36,7 +37,7 @@ static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
     lastX = (float)xpos;
     lastY = (float)ypos;
 
-    const float sensitivity = 0.07f;
+    const float sensitivity = 0.01f;
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -213,6 +214,9 @@ int main()
         };
         SkyBox skybox(faces);
 
+        // Drone (simple low-poly model)
+        Drone drone;
+
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
@@ -235,6 +239,7 @@ int main()
 
             skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
             terrain.render(glm::value_ptr(view), glm::value_ptr(projection), cameraPos, sun);
+            drone.render(glm::value_ptr(view), glm::value_ptr(projection), cameraPos, sun);
 
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
