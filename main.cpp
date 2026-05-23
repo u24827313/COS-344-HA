@@ -1,11 +1,7 @@
 #include <GL/glew.h>
 #include <iostream>
-#include <thread>
-#include <random>
-#include <chrono> 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "shader.hpp"
 
@@ -15,6 +11,7 @@
 #include "Hole.h"
 #include "GolfCourse.h"
 #include "RenderObject.h"
+#include "MathUtils.h"
 
 using namespace glm;
 using namespace std;
@@ -83,8 +80,7 @@ inline void startUpGLEW()
 {
     std::cout << "startupGLEW() has been called." << std::endl;
     glewExperimental = true;
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
+    
     GLenum m = glewInit();
     if (m != GLEW_OK && m != 4)  // Ignore this known core profile bug
     {
@@ -288,11 +284,11 @@ int main()
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glm::mat4 view       = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
+            glm::mat4 view       = makeLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+            glm::mat4 projection = makePerspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
 
-            skybox.render(glm::value_ptr(view), glm::value_ptr(projection));
-            course.render(glm::value_ptr(view), glm::value_ptr(projection), cameraPos, sun);
+            skybox.render(&view[0][0], &projection[0][0]);
+            course.render(&view[0][0], &projection[0][0], cameraPos, sun);
 
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
