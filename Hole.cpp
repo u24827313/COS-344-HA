@@ -1,7 +1,7 @@
 #include "Hole.h"
 #include "Terrain.h"
 
-Hole::Hole(int number, int par_, const glm::vec3& tee, const glm::vec3& pin): holeNumber(number), par(par_), teePosition(tee), pinPosition(pin){
+Hole::Hole(int number, const glm::vec3& tee, const glm::vec3& pin): holeNumber(number), teePosition(tee), pinPosition(pin){
 }
 
 Hole::~Hole() {
@@ -17,7 +17,6 @@ Hole& Hole::operator=(Hole&& other) noexcept {
     if (this != &other) {
         for (auto* obj : objects) delete obj;
         holeNumber    = other.holeNumber;
-        par           = other.par;
         teePosition   = other.teePosition;
         pinPosition   = other.pinPosition;
         objects       = std::move(other.objects);

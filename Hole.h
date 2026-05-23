@@ -10,16 +10,15 @@ class Terrain;
 class Hole {
     private:
         int holeNumber;
-        int par;
         glm::vec3 teePosition;
         glm::vec3 pinPosition;
 
-        // The hole owns these and deletes them in the destructor.
+        
         std::vector<RenderObject*> objects;
         std::vector<int> bunkerIndices;
 
     public:
-        Hole(int number, int par, const glm::vec3& tee, const glm::vec3& pin);
+        Hole(int number, const glm::vec3& tee, const glm::vec3& pin);
         ~Hole();
 
         Hole(const Hole&) = delete;
@@ -39,10 +38,15 @@ class Hole {
         void linkBunker(int terrainBunkerIndex);
 
         
-        int       getNumber() const   { return holeNumber; }
-        int       getPar() const      { return par; }
-        glm::vec3 getTee() const      { return teePosition; }
-        glm::vec3 getPin() const      { return pinPosition; }
+        int       getNumber() const{ 
+            return holeNumber; 
+        }
+        glm::vec3 getTee() const{ 
+            return teePosition; 
+        }
+        glm::vec3 getPin() const{ 
+            return pinPosition; 
+        }
         const std::vector<int>& getBunkerIndices() const { return bunkerIndices; }
 };
 

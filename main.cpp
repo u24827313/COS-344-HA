@@ -253,7 +253,7 @@ int main()
         flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
 
         // Add them to Hole 1
-        Hole* hole1 = new Hole(1, 4, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole* hole1 = new Hole(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         hole1->addObject(flagstick);
         hole1->addObject(flag);
         course.addHole(std::unique_ptr<Hole>(hole1));
