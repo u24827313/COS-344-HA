@@ -1,0 +1,18 @@
+W - Move Camera Up
+A - Move Camera Left
+S - Move Camera Down
+D - Move Camera Right
+
+T - Move Camera Up Slowly
+F - Move Camera Down Slowly
+
++ - Zoom In
+- - Zoom Out
+
+Q - Rotate Camera CW [Scene Moves CCW]
+E - Rotate Camera CCW [Scene Moves CW]
+
+R - Reset
+Esc - Mouse Movement [Broke]
+
+L - Switch Shader
