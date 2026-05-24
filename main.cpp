@@ -15,6 +15,7 @@
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/MathUtils.h"
+#include "src/Hole13.h"
 
 using namespace glm;
 using namespace std;
@@ -318,6 +319,7 @@ int main()
             "assets/terrain/stone.bmp",
             "assets/terrain/concrete.bmp",
             "assets/terrain/wood.bmp"
+            "assets/terrain/sand.bmp"
         );
         
         /*// object instantiation
@@ -380,9 +382,11 @@ int main()
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
+        course.addHole(std::unique_ptr<Hole>(hole13));
         auto* ball = new RenderObject(
             RenderObject::createSphere(16, 16),
             ballTexture,
