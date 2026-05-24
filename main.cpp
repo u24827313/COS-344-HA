@@ -14,6 +14,9 @@
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/MathUtils.h"
+#include "src/Hole05.h"
+#include "src/Hole04.h"
+#include "src/Hole06.h"
 
 using namespace glm;
 using namespace std;
@@ -21,20 +24,22 @@ using namespace std;
 // camer orientation variables
 static float camYaw = -90.0f;
 static float camPitch = 0.0f;
-static float lastX = 750.0f;  
-static float lastY = 500.0f;  
-static bool  firstMouse = true;
+static float lastX = 750.0f;
+static float lastY = 500.0f;
+static bool firstMouse = true;
 static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
 static double lastTime, currentTime, deltaTime;
 int state = 0;
 double delay = 0.0;
 
-mat4 makeMVP(mat4 M, mat4 V, mat4 P) {
+mat4 makeMVP(mat4 M, mat4 V, mat4 P)
+{
     return (P * (V * M));
 }
 
-static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp) {
+static void processControls(GLFWwindow *window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp)
+{
     double speed = 5 * deltaTime;
 
     // Left-Front-Right-Back Movement
@@ -125,7 +130,7 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         model = mat4(1.0f);
         cameraAngle = 0.0f;
         cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
-        cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
+        cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
         view = lookAt(
             cameraPos,               // Camera position
             cameraPos + cameraFront, // Look at point
@@ -152,14 +157,16 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     }
 }
 
-static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
-    if (firstMouse){
+static void processMouseMovement(GLFWwindow *w, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
         lastX = (float)xpos;
         lastY = (float)ypos;
         firstMouse = false;
     }
-    float xoffset = (float) xpos - lastX;
-    float yoffset = lastY - (float)ypos; 
+    float xoffset = (float)xpos - lastX;
+    float yoffset = lastY - (float)ypos;
     lastX = (float)xpos;
     lastY = (float)ypos;
 
@@ -167,13 +174,13 @@ static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
-    camYaw   += xoffset;
+    camYaw += xoffset;
     camPitch += yoffset;
 
     // clamp to avoid camera flip
-    if (camPitch >  89.0f) 
-        camPitch =  89.0f;
-    if (camPitch < -89.0f) 
+    if (camPitch > 89.0f)
+        camPitch = 89.0f;
+    if (camPitch < -89.0f)
         camPitch = -89.0f;
 
     glm::vec3 dir;
@@ -192,23 +199,23 @@ const char *getError()
 
 inline void startUpGLFW()
 {
-    std::cout << "startuoGLFW() was called by setUp()" <<std::endl;
-    //glewExperimental = true; // Needed for core profile
-    
+    std::cout << "startuoGLFW() was called by setUp()" << std::endl;
+    // glewExperimental = true; // Needed for core profile
+
     if (!glfwInit())
     {
         throw getError();
     }
-    std::cout << "glfwInit() did not lead to null" <<std::endl;
+    std::cout << "glfwInit() did not lead to null" << std::endl;
 }
 
 inline void startUpGLEW()
 {
     std::cout << "startupGLEW() has been called." << std::endl;
     glewExperimental = true;
-    
+
     GLenum m = glewInit();
-    if (m != GLEW_OK && m != 4)  // Ignore this known core profile bug
+    if (m != GLEW_OK && m != 4) // Ignore this known core profile bug
     {
         std::cerr << "GLEW Error Code: " << m << std::endl;
         std::cerr << "GLEW Error String: " << glewGetErrorString(m) << std::endl;
@@ -221,21 +228,21 @@ inline void startUpGLEW()
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 }
 
-inline GLFWwindow *setUp(){
-    
+inline GLFWwindow *setUp()
+{
 
-    std::cout << "starting up GLFW and configuring" <<std::endl;
+    std::cout << "starting up GLFW and configuring" << std::endl;
     startUpGLFW();
     glfwWindowHint(GLFW_SAMPLES, 4);               // 4x antialiasing
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);           // To make MacOS happy; should not be needed
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);          // To make MacOS happy; should not be needed
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
-    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);  // Make sure window is visible
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);                       // Make sure window is visible
 
-    std::cout << "Done setting up GLFW" <<std::endl;
-    std::cout << "Creating GLFWwindow in setUp() (so we can return it to main)" <<std::endl;
-    GLFWwindow *window;                                            // (In the accompanying source code, this variable is global for simplicity)
+    std::cout << "Done setting up GLFW" << std::endl;
+    std::cout << "Creating GLFWwindow in setUp() (so we can return it to main)" << std::endl;
+    GLFWwindow *window; // (In the accompanying source code, this variable is global for simplicity)
     window = glfwCreateWindow(1500, 1000, "View", NULL, NULL);
     if (window == NULL)
     {
@@ -246,15 +253,18 @@ inline GLFWwindow *setUp(){
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
-    std::cout << "checking if GLFWwindow is null" <<std::endl;
-    
-    std::cout << "GLFWwindow was not null\nNow calling glfwMakeContextCurrent(window)" <<std::endl;
+    std::cout << "checking if GLFWwindow is null" << std::endl;
+
+    std::cout << "GLFWwindow was not null\nNow calling glfwMakeContextCurrent(window)" << std::endl;
     glfwMakeContextCurrent(window); // Initialize GLEW
-    std::cout << "calling startupGLEW()" <<std::endl;
-    
-    try{
+    std::cout << "calling startupGLEW()" << std::endl;
+
+    try
+    {
         startUpGLEW();
-    }catch(const std::exception& e){
+    }
+    catch (const std::exception &e)
+    {
         std::cerr << "Setup failed: " << e.what() << std::endl;
         return nullptr;
     }
@@ -264,12 +274,12 @@ inline GLFWwindow *setUp(){
 int main()
 {
     GLFWwindow *window;
-    std::cout << "Creating GLFWwindow" <<std::endl;
+    std::cout << "Creating GLFWwindow" << std::endl;
     try
     {
-        std::cout << "Calling setUp()" <<std::endl;
+        std::cout << "Calling setUp()" << std::endl;
         window = setUp();
-        std::cout << "setUp() complete" <<std::endl;
+        std::cout << "setUp() complete" << std::endl;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetCursorPosCallback(window, processMouseMovement);
     }
@@ -277,48 +287,49 @@ int main()
     {
         cout << e << endl;
         throw;
-    }catch(const std::exception& e){
+    }
+    catch (const std::exception &e)
+    {
         cout << "Error: " << e.what() << endl;
         return 1;
-    }catch(...){
+    }
+    catch (...)
+    {
         cerr << "Unknown error" << endl;
         return 1;
     }
 
-    //Add code here
-    
-    try {
-        
+    // Add code here
+
+    try
+    {
+
         GLuint programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
 
-        
         // get uniform locations
-        GLint modelLoc      = glGetUniformLocation(programId, "model");
-        GLint viewLoc       = glGetUniformLocation(programId, "view");
+        GLint modelLoc = glGetUniformLocation(programId, "model");
+        GLint viewLoc = glGetUniformLocation(programId, "view");
         GLint projectionLoc = glGetUniformLocation(programId, "projection");
-        GLint colourLoc     = glGetUniformLocation(programId, "shapeColour");
-        
-        
+        GLint colourLoc = glGetUniformLocation(programId, "shapeColour");
+
         std::cout << "modelLoc: " << modelLoc << std::endl;
         std::cout << "viewLoc: " << viewLoc << std::endl;
         std::cout << "projectionLoc: " << projectionLoc << std::endl;
         std::cout << "colourLoc: " << colourLoc << std::endl;
-        
-    
+
         // light
         DirectionalLight sun;
         sun.direction = glm::normalize(glm::vec3(-0.3f, -1.0f, -0.2f));
-        sun.colour    = glm::vec3(1.0f, 0.95f, 0.85f);
-        sun.ambient   = 0.25f;
+        sun.colour = glm::vec3(1.0f, 0.95f, 0.85f);
+        sun.ambient = 0.25f;
         //
         GolfCourse course(
             "assets/terrain/grass.bmp",
             "assets/terrain/dirt.bmp",
             "assets/terrain/stone.bmp",
             "assets/terrain/concrete.bmp",
-            "assets/terrain/wood.bmp"
-        );
-        
+            "assets/terrain/wood.bmp");
+
         /*// object instantiation
         Terrain terrain(
             "assets/terrain/grass.bmp",
@@ -332,7 +343,7 @@ int main()
         // design the terrain
         terrain.addBunker(30.0f, 80.0f, 15.0f, 4.0f);
         terrain.addMound(30.0f, 80.0f, 15.0f, 3.0f);
-    
+
         terrain.addBunker(-12.0f, 50.0f, 6.0f, 2.5f);
         terrain.addMound(-12.0f, 50.0f, 6.0f, -1.5f);
 
@@ -344,51 +355,49 @@ int main()
             "assets/skybox/Daylight Box_Top.bmp",
             "assets/skybox/Daylight Box_Bottom.bmp",
             "assets/skybox/Daylight Box_Front.bmp",
-            "assets/skybox/Daylight Box_Back.bmp"
-        };
+            "assets/skybox/Daylight Box_Back.bmp"};
         SkyBox skybox(faces);
 
         // holes
         GLuint objectShader = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
-        GLuint flagTexture  = loadBMPTexture("assets/course/white.bmp");
-        GLuint poleTexture  = loadBMPTexture("assets/course/wood.bmp");
-        GLuint ballTexture  = loadBMPTexture("assets/course/white.bmp");
+        GLuint flagTexture = loadBMPTexture("assets/course/white.bmp");
+        GLuint poleTexture = loadBMPTexture("assets/course/wood.bmp");
+        GLuint ballTexture = loadBMPTexture("assets/course/white.bmp");
 
         // build a flag stick
-        glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
-        glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
- 
-        auto* flagstick = new RenderObject(
-        RenderObject::createCylinder(12),
-            poleTexture,
-            objectShader
-        );
-        flagstick->setPosition(glm::vec3(0.0f, 0.0f, 100.0f));   // at the pin
-        flagstick->setScale(glm::vec3(0.1f, 3.0f, 0.1f));        // thin and tall
+        glm::vec3 cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        auto* flag = new RenderObject(
+        auto *flagstick = new RenderObject(
+            RenderObject::createCylinder(12),
+            poleTexture,
+            objectShader);
+        flagstick->setPosition(glm::vec3(0.0f, 0.0f, 100.0f)); // at the pin
+        flagstick->setScale(glm::vec3(0.1f, 3.0f, 0.1f));      // thin and tall
+
+        auto *flag = new RenderObject(
             RenderObject::createQuad(),
             flagTexture,
-            objectShader
-        );
+            objectShader);
         flag->setPosition(glm::vec3(0.5f, 2.7f, 100.0f));
-        flag->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));         // stand it up vertically
+        flag->setRotation(glm::vec3(90.0f, 0.0f, 0.0f)); // stand it up vertically
         flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
 
         // Add them to Hole 1
-        Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        course.addHole(std::unique_ptr<Hole>(hole1));
-        course.addHole(std::unique_ptr<Hole>(hole2));
-        auto* ball = new RenderObject(
+         Hole01 *hole1 = new Hole01(1, glm::vec3(0, 0, 0), glm::vec3(0, 0, 100));
+        //Hole02 *hole2 = new Hole02(2, glm::vec3(0, 0, 0), glm::vec3(0, 0, 100));
+        Hole04 *hole4 = new Hole04(4, glm::vec3(0, 0, 0), glm::vec3(0, 0, 100));
+        course.addHole(std::unique_ptr<Hole>(hole4));
+         course.addHole(std::unique_ptr<Hole>(hole1));
+        // course.addHole(std::unique_ptr<Hole>(hole2));
+        auto *ball = new RenderObject(
             RenderObject::createSphere(16, 16),
             ballTexture,
-            objectShader
-        );
+            objectShader);
         ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
-        ball->setScale(glm::vec3(0.4f)); 
-        //hole1->addObject(ball);
-        //course.addHole(std::unique_ptr<Hole>(hole1));
+        ball->setScale(glm::vec3(0.4f));
+        // hole1->addObject(ball);
+        // course.addHole(std::unique_ptr<Hole>(hole1));
 
         // add course terrain
         course.build();
@@ -397,20 +406,21 @@ int main()
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
         float aspect = (float)fbWidth / (float)fbHeight;
- 
+
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
         float cameraAngle = 0.0f;
         glm::mat4 model(1.0f);
-        
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        glm::mat4 view       = makeLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        glm::mat4 view = makeLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         glm::mat4 projection = makePerspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
         mat4 MVP = makeMVP(model, view, projection);
 
-        while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS) {
+        while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_L) != GLFW_PRESS)
+        {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             skybox.render(&view[0][0], &projection[0][0]);
@@ -425,56 +435,63 @@ int main()
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && currentTime - delay > 0.5)
             {
                 delay = currentTime;
-            
-                switch (state) {
-                    case 0 : {
-                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
-                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
-                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl"));
-                        state++;
-                        break;
-                    }
-                    case 1 : {
-                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_invert.glsl"));
-                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_invert.glsl"),
-                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl"));
-                        state++;
-                        break;
-                    }
-                    case 2 : {
-                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_monochrome.glsl"));
-                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_monochrome.glsl"),
-                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl"));
-                        state++;
-                        break;
-                    }
-                    case 3 : {
-                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftdown.glsl"));
-                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftdown.glsl"),
-                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl"));
-                        state++;
-                        break;
-                    }
-                    case 4 : {
-                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftup.glsl"));
-                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftup.glsl"),
-                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl"));
-                        state++;
-                        break;
-                    }
-                    case 5 : {
-                        programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
-                        course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_fragment.glsl"),
-                                        LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl"));
-                        state = 0;
-                        break;
-                    }
+
+                switch (state)
+                {
+                case 0:
+                {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
+                    skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
+                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl"));
+                    state++;
+                    break;
+                }
+                case 1:
+                {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl");
+                    skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_invert.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_invert.glsl"),
+                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl"));
+                    state++;
+                    break;
+                }
+                case 2:
+                {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl");
+                    skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_monochrome.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_monochrome.glsl"),
+                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl"));
+                    state++;
+                    break;
+                }
+                case 3:
+                {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl");
+                    skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftdown.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftdown.glsl"),
+                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl"));
+                    state++;
+                    break;
+                }
+                case 4:
+                {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl");
+                    skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftup.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftup.glsl"),
+                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl"));
+                    state++;
+                    break;
+                }
+                case 5:
+                {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
+                    skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_fragment.glsl"),
+                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl"));
+                    state = 0;
+                    break;
+                }
                 }
             }
 
@@ -490,7 +507,9 @@ int main()
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
-    } catch (const char* e) {
+    }
+    catch (const char *e)
+    {
         cout << e << endl;
         glfwTerminate();
         return -1;
