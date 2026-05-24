@@ -31,11 +31,6 @@ void Hole14::design(Terrain& terrain) {
     float raisedHeightOffset = 0.1f;
     float surfaceY           = getTee().y + raisedHeightOffset;
 
-    // =========================================================================
-    // GREEN PLATFORM — oval/teardrop, wider at the bottom, narrower at the top.
-    // Built from two stacked cylinders following the Hole03 cylinder pattern.
-    // =========================================================================
-
     // ---- LOWER (wider) part of the green — a flat cylinder ----
     float lowerRadius = 3.0f;
     std::vector<float> lowerData = RenderObject::createCylinder(32);
@@ -106,12 +101,8 @@ void Hole14::design(Terrain& terrain) {
     ));
     addObject(neck);
 
-    // =========================================================================
-    // DARKER GRASS GUIDE PATH (the purple curve in the sketch)
-    // A curved strip of darker grass weaving through the green, from the entry
-    // at the bottom up around the right side to the upper green.
-    // Built from rotated segments, same pattern as Hole03's curved track.
-    // =========================================================================
+    
+    // A curved strip of concrete from the entry
 
     float guideSegLength = 1.0f;
     float guideSegWidth  = 1.5f;
@@ -143,15 +134,13 @@ void Hole14::design(Terrain& terrain) {
             0.0f,
             cosf(glm::radians(guideAngle))
         );
-        // Walk forward but reverse direction (we want the path to go INTO the green, +Z)
+        // Walk forward but reverse direction 
         guidePos -= forward * guideSegLength;
         guideAngle += guideStep;
     }
 
-    // =========================================================================
-    // ENTRY at the bottom (the red blob at the bottom of the sketch)
-    // A wooden ramp/platform leading into the green from below.
-    // =========================================================================
+    
+    // A platform leading into the green 
 
     float entryWidth   = 10.5f;
     float entryHeight  = 0.15f;
@@ -207,10 +196,9 @@ void Hole14::design(Terrain& terrain) {
         addObject(rock);
     }*/
 
-    // =========================================================================
-    // ROCK BORDER — outlines both halves of the green (lower and upper)
-    // Uses the same circular-rock pattern as Hole03's cylinder rocks.
-    // =========================================================================
+    
+    // ROCK BORDER 
+
 
     int numLowerRocks = 14;
     float lowerOrbit  = lowerRadius + 0.2f;
@@ -298,7 +286,7 @@ void Hole14::design(Terrain& terrain) {
     std::vector<float> flagData = RenderObject::createTrapezoid(
         flagBottomWidth, flagTopWidth, flagLength, flagThickness
     );
-    RenderObject* flag = new RenderObject(flagData, concreteTexture, whiteFlag);
+    RenderObject* flag = new RenderObject(flagData, whiteFlag, whiteFlag);
     flag->setRotation(glm::vec3(0.0f, 0.0f, -90.0f));
     flag->setPosition(glm::vec3(
         getPin().x + flagLength / 2.0f,
