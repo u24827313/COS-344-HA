@@ -21,6 +21,9 @@ void Hole03::design(Terrain& terrain) {
     float greenHeight = 0.3f;
     float raisedHeightOffset = 0.1f;
     float moundRadius = 2.0f; 
+    float surfaceY = getTee().y + raisedHeightOffset; // add this
+
+
 
     // --- CYLINDER GREEN BASE CONFIGURATION ---
     std::vector<float> cylinderData = RenderObject::createCylinder(32);
@@ -272,97 +275,109 @@ void Hole03::design(Terrain& terrain) {
         addObject(rock);
     }
 
-    // Connection Hole02 and Hole03 with a Curved Bridge Path
-    // 1. Re-track Hole02's Green Cylinder Position
-    float surfaceY = getTee().y + raisedHeightOffset; 
+    // --- CONCRETE BRIDGE: Hole02 Cylinder -> Hole03 End Cylinder ---
 
-    float platformHeightH2 = 1.5f;
-    float pathDepthH1 = 8.0f;
-    float turnSegmentLengthH1 = 1.0f;
-    int turnSegmentsH1 = 9;
-    float totalCurveAngleH1 = 45.0f;
-    float platformWidthH1 = 8.0f;
-    float halfWidthH1 = platformWidthH1 / 2.0f;
-    float pathOutwardOffset = 0.8f;
+// Re-track Hole02's cylinder position
+float platformHeightH2 = 1.5f;
+float pathDepthH1b = 8.0f;
+float turnSegmentLengthH1b = 1.0f;
+int turnSegmentsH1b = 9;
+float totalCurveAngleH1b = 45.0f;
+float platformWidthH1b = 8.0f;
+float halfWidthH1b = platformWidthH1b / 2.0f;
+float pathOutwardOffsetb = 0.8f;
 
-    glm::vec3 h2SegmentCenter = glm::vec3(
-        getTee().x - halfWidthH1 - pathOutwardOffset,
-        surfaceY, // Now safely defined!
-        getTee().z - (pathDepthH1 / 2.0f) - (turnSegmentLengthH1 / 2.0f)
-    );
 
-    float startAngleH1 = 180.0f;
-    float angleStepH1 = totalCurveAngleH1 / (turnSegmentsH1 - 1);
-    float finalH1Angle = startAngleH1;
 
-    for (int i = 0; i < turnSegmentsH1; ++i) {
-        finalH1Angle = startAngleH1 + i * angleStepH1;
-        glm::vec3 forward = glm::vec3(sinf(glm::radians(finalH1Angle)), 0.0f, cosf(glm::radians(finalH1Angle)));
-        h2SegmentCenter += forward * turnSegmentLengthH1;
-    }
+glm::vec3 h2SegCenter = glm::vec3(
+    getTee().x - halfWidthH1b - pathOutwardOffsetb,
+    surfaceY,
+    getTee().z - (pathDepthH1b / 2.0f) - (turnSegmentLengthH1b / 2.0f)
+);
 
-    float h2PlatformWidth = 4.5f;
-    float h2SegmentLength = 1.0f;
-    int h2TotalSegments = 12;
-    float h2TotalCurveAngle = -60.0f;
-    float angleStepH2 = h2TotalCurveAngle / (h2TotalSegments - 1);
-    float h2CurrentAngle = finalH1Angle;
+float startAngleH1b = 180.0f;
+float angleStepH1b = totalCurveAngleH1b / (turnSegmentsH1b - 1);
+float finalH1Angleb = startAngleH1b;
 
-    float initialGapCompensationH2 = -0.5f;
-    glm::vec3 h2InitialForward = glm::vec3(sinf(glm::radians(h2CurrentAngle)), 0.0f, cosf(glm::radians(h2CurrentAngle)));
-    h2SegmentCenter += h2InitialForward * initialGapCompensationH2;
+for (int i = 0; i < turnSegmentsH1b; ++i) {
+    finalH1Angleb = startAngleH1b + i * angleStepH1b;
+    glm::vec3 fwd = glm::vec3(sinf(glm::radians(finalH1Angleb)), 0.0f, cosf(glm::radians(finalH1Angleb)));
+    h2SegCenter += fwd * turnSegmentLengthH1b;
+}
 
-    for (int i = 0; i < h2TotalSegments; ++i) {
-        glm::vec3 forward = glm::vec3(sinf(glm::radians(h2CurrentAngle)), 0.0f, cosf(glm::radians(h2CurrentAngle)));
-        h2SegmentCenter += forward * h2SegmentLength;
-        h2CurrentAngle += angleStepH2;
-    }
+float h2PlatformWidthb  = 4.5f;
+float h2SegmentLengthb  = 1.0f;
+int   h2TotalSegmentsb  = 12;
+float h2TotalCurveAngleb = -60.0f;
+float angleStepH2b = h2TotalCurveAngleb / (h2TotalSegmentsb - 1);
+float h2CurrentAngleb = finalH1Angleb;
 
-    float h2GreenRadius = h2PlatformWidth / 2.0f;
-    float h2CylinderInwardSlider = 4.5f;
-    glm::vec3 h2FinalExitDir = glm::vec3(sinf(glm::radians(h2CurrentAngle - angleStepH2)), 0.0f, cosf(glm::radians(h2CurrentAngle - angleStepH2)));
+glm::vec3 h2InitFwd = glm::vec3(sinf(glm::radians(h2CurrentAngleb)), 0.0f, cosf(glm::radians(h2CurrentAngleb)));
+h2SegCenter += h2InitFwd * (-0.5f);
+
+for (int i = 0; i < h2TotalSegmentsb; ++i) {
+    glm::vec3 fwd = glm::vec3(sinf(glm::radians(h2CurrentAngleb)), 0.0f, cosf(glm::radians(h2CurrentAngleb)));
+    h2SegCenter += fwd * h2SegmentLengthb;
+    h2CurrentAngleb += angleStepH2b;
+}
+
+float h2GreenRadiusb = h2PlatformWidthb / 2.0f;
+float h2CylInwardSlider = 2.5f;
+glm::vec3 h2ExitDir = glm::vec3(
+    sinf(glm::radians(h2CurrentAngleb - angleStepH2b)),
+    0.0f,
+    cosf(glm::radians(h2CurrentAngleb - angleStepH2b))
+);
+
+glm::vec3 h2CylPos = h2SegCenter + (h2ExitDir * (h2GreenRadiusb - h2CylInwardSlider));
+h2CylPos.y = getTee().y - (platformHeightH2 / 2.0f) + raisedHeightOffset;
+
+// Bridge start = Hole02 cylinder, bridge end = Hole03 end cylinder
+glm::vec3 bridgeStart = h2CylPos;
+glm::vec3 bridgeEnd   = endCylinderPos;
+
+// Midpoint control for the curve (pulls the path into a smooth arc)
+glm::vec3 bridgeMid = glm::vec3(
+    (bridgeStart.x + bridgeEnd.x) / 2.0f - 3.0f, // pull left for natural curve
+    cylinderPos.y,
+    (bridgeStart.z + bridgeEnd.z) / 2.0f
+);
+
+int   bridgeSegments      = 12;
+float bridgeWidth         = 2.3f;
+float bridgeRounding      = 0.0f;  // flat like the concrete path in Hole01
+float bridgeSegmentLength = 1.4f;
+float bridgeSegmentRender = 1.6f;  // overlap to hide seams
+
+std::vector<float> bridgeSegData = RenderObject::createRoundedBox(
+    bridgeWidth, greenHeight, bridgeSegmentRender, bridgeRounding, 8
+);
+
+for (int i = 0; i < bridgeSegments; ++i) {
+    float t = (float)i / (bridgeSegments - 1);
+
+    // Quadratic bezier: gives a proper curve rather than a straight line
+    float u = 1.0f - t;
+    glm::vec3 pos = (u * u) * bridgeStart
+                  + (2.0f * u * t) * bridgeMid
+                  + (t * t) * bridgeEnd;
+    pos.y = cylinderPos.y;
+
+    // Heading: sample slightly ahead on the curve for rotation
+    float t2 = glm::min(t + 0.01f, 1.0f);
+    float u2 = 1.0f - t2;
+    glm::vec3 nextPos = (u2 * u2) * bridgeStart
+                      + (2.0f * u2 * t2) * bridgeMid
+                      + (t2 * t2) * bridgeEnd;
+
+    glm::vec3 heading = glm::normalize(nextPos - pos);
+    float angle = glm::degrees(atan2f(heading.x, heading.z));
+
+    RenderObject* bridgeSeg = new RenderObject(bridgeSegData, concreteTexture, 0);
+    bridgeSeg->setPosition(pos);
+    bridgeSeg->setRotation(glm::vec3(0.0f, angle, 0.0f));
+    addObject(bridgeSeg);
+}
+
     
-    // This is our absolute destination target center!
-    glm::vec3 h2CylinderTargetPos = h2SegmentCenter + (h2FinalExitDir * (h2GreenRadius - h2CylinderInwardSlider));
-    h2CylinderTargetPos.y = getTee().y - (platformHeightH2 / 2.0f) + raisedHeightOffset;
-
-
-    // 2. Build the Curved Interpolation Path
-    // Start node: endCylinderPos (Hole03 Exit)
-    // End node: h2CylinderTargetPos (Hole02 Entrance)
-    glm::vec3 bridgeStart = endCylinderPos;
-    glm::vec3 bridgeEnd   = h2CylinderTargetPos;
-
-    int bridgeSegments = 8; // Number of intermediate steps
-    float bridgeWidth = 3.5f; // Sized slightly narrower than main paths for visual style
-    float bridgeRounding = 0.1f;
-    float bridgeSegmentLength = 1.6f;
-
-    std::vector<float> bridgeSegData = RenderObject::createRoundedBox(
-        bridgeWidth, greenHeight, bridgeSegmentLength, bridgeRounding, 8
-    );
-
-    // Generate path using a simple linear/bezier hybrid tracking system
-    for (int i = 0; i < bridgeSegments; ++i) {
-        float t = (float)i / (bridgeSegments - 1);
-        
-        // Linear interpolation from Start Green to End Green
-        glm::vec3 currentBridgePos = glm::mix(bridgeStart, bridgeEnd, t);
-        
-        // Smooth out the height assignment dynamically
-        currentBridgePos.y = cylinderPos.y; 
-
-        RenderObject* bridgeSeg = new RenderObject(bridgeSegData, grassTexture, grassTexture);
-        bridgeSeg->setPosition(currentBridgePos);
-
-        // Calculate rotation heading to point towards the target cleanly
-        glm::vec3 nextPos = glm::mix(bridgeStart, bridgeEnd, glm::min(t + 0.05f, 1.0f));
-        glm::vec3 headingDirection = glm::normalize(nextPos - currentBridgePos);
-        
-        float bridgeAngleRadians = atan2f(headingDirection.x, headingDirection.z);
-        float bridgeAngleDegrees = glm::degrees(bridgeAngleRadians);
-
-        bridgeSeg->setRotation(glm::vec3(0.0f, bridgeAngleDegrees, 0.0f));
-        addObject(bridgeSeg);
-    }
 }
