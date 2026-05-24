@@ -9,6 +9,9 @@
 #include "src/Terrain.h"
 #include "src/SkyBox.h"
 #include "src/Hole.h"
+#include "src/Hole01.h"
+#include "src/Hole02.h"
+#include "src/Hole03.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/MathUtils.h"
@@ -374,10 +377,12 @@ int main()
         flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
 
         // Add them to Hole 1
-        Hole* hole1 = new Hole(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        hole1->addObject(flagstick);
-        hole1->addObject(flag);
+        Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
         course.addHole(std::unique_ptr<Hole>(hole1));
+        course.addHole(std::unique_ptr<Hole>(hole2));
+        course.addHole(std::unique_ptr<Hole>(hole3));
         auto* ball = new RenderObject(
             RenderObject::createSphere(16, 16),
             ballTexture,
@@ -385,11 +390,12 @@ int main()
         );
         ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
         ball->setScale(glm::vec3(0.4f)); 
-        hole1->addObject(ball);
-        course.addHole(std::unique_ptr<Hole>(hole1));
+        //hole1->addObject(ball);
+        //course.addHole(std::unique_ptr<Hole>(hole1));
 
         // add course terrain
         course.build();
+        course.setShader(programId, objectShader);
 
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
