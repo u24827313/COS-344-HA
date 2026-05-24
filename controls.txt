@@ -16,7 +16,7 @@ R - Reset
 Esc - Mouse Movement [Broke]
 
 L - Switch Shader
-M - Switch Time
+N - Switch Time
 P - View Drone
-N - Night Vision Shader
+M - Night Vision Shader
 U - Top-down View
