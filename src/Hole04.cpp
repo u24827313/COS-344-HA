@@ -187,27 +187,29 @@ void Hole04::design(Terrain &terrain)
     // GARDEN WALLS AROUND GREEN
     // =========================================================
     float wallHeight = 2.8f;
+
     std::vector<float> wallData =
         RenderObject::createRoundedBox(
             outerRadius - innerRadius,
             wallHeight,
-            0.5f,
+            1.0f,
             roundness,
             10);
-    glm::vec3 wallPos = greenPos;
-    wallPos.y = getTee().y - (platformHeight * 0.5f) + raisedOffset + (wallHeight * 0.5f);
-    RenderObject *wall =
-        new RenderObject(wallData, stoneTexture, 0);
-    wall->setPosition(wallPos);
-    addObject(wall);
+        glm::vec3 wallPos = greenPos+ glm::vec3(0, 0, -(innerRadius + outerRadius) * 0.5f);
+        wallPos.y = getTee().y - (platformHeight * 0.5f) + raisedOffset + (wallHeight * 0.5f);
+        RenderObject *wall =
+        new RenderObject(wallData, grassTexture, 0);
+        wall->setPosition(wallPos);
+        addObject(wall);
+
     // =========================================================
     // STRAIGHT ROAD FROM OPENING INTO GREEN
     // =========================================================
 
-    float roadWidth = 6.0f;
-    float roadLength = 22.0f;
+    float roadWidth = 62.0f;
+    float roadLength = 10.0f;
 
-   float roadAngle = 5.0f * M_PI / 4.0f; // 225° (LEFT opening)
+    float roadAngle = 5.0f * M_PI / 4.0f; // 225° (LEFT opening)
 
     glm::vec3 roadDir(
         cosf(roadAngle),
@@ -239,6 +241,159 @@ void Hole04::design(Terrain &terrain)
         0.0f));
 
     addObject(road);
+
+
+
+// =========================================================
+// Hole 4 last section
+// =========================================================
+float broadWidth = 62.0f;
+    float broadLength = 10.0f;
+
+    float broadAngle = 5.0f * M_PI / 4.0f; // 225° (LEFT opening)
+
+    glm::vec3 broadDir(
+        cosf(broadAngle),
+        0.0f,
+        sinf(broadAngle));
+
+    std::vector<float> broadData =
+        RenderObject::createRoundedBox(
+            roadWidth,
+            platformHeight,
+            roadLength,
+            roundness,
+            10);
+
+    RenderObject *broad =
+        new RenderObject(broadData, grassTexture, 0);
+
+    glm::vec3 broadPos = roadStart;
+    broadPos.y = getTee().y - (platformHeight * 0.5f) + raisedOffset;
+
+    broad->setPosition(broadPos);
+
+    broad->setRotation(glm::vec3(
+        0.0f,
+        glm::degrees(broadAngle) - 90.0f,
+        0.0f));
+
+    addObject(broad);
+
+// =========================================================
+// LEFT SIDE WALL ALONG STRAIGHT ROAD
+// =========================================================
+
+float lroadAngle = 5.0f * M_PI / 4.0f; // same as road
+glm::vec3 lroadDir(cosf(lroadAngle), 0.0f, sinf(lroadAngle));
+
+// perpendicular (LEFT side of road)
+glm::vec3 leftDir(6*lroadDir.z, 0.0f, 2*lroadDir.x);
+
+float lwallSegmentCount = 1;
+float lwallSegmentLength = 1.0f;
+float lwallHeight = 2.8f;
+float lwallOffset = 2.8f; // distance from road center
+
+std::vector<float> wallMesh =
+    RenderObject::createRoundedBox(
+        20.5f,        // thin wall thickness
+        lwallHeight,
+        lwallSegmentLength,
+        roundness,
+        10
+    );
+
+glm::vec3 start =
+    greenPos - lroadDir * 2.0f; // start near opening, outside green
+
+for (int i = 0; i < lwallSegmentCount; i++)
+{
+    glm::vec3 segmentPos =
+        start + lroadDir * (i * lwallSegmentLength);
+
+    // push to LEFT side of road
+    segmentPos += leftDir * lwallOffset;
+
+    segmentPos.y =
+        getTee().y - (platformHeight * 0.5f)
+        + raisedOffset
+        + (wallHeight * 0.5f);
+
+    RenderObject* wallSeg =
+        new RenderObject(
+            wallMesh,
+            grassTexture,
+            0
+        );
+
+    wallSeg->setPosition(segmentPos);
+
+    wallSeg->setRotation(glm::vec3(
+        0.0f,
+        glm::degrees(lroadAngle) - 90.0f,
+        0.0f
+    ));
+
+    addObject(wallSeg);
+// =========================================================
+// SPLIT FOR STRAIGHT ROAD
+// =========================================================
+
+float mroadAngle = 5.0f * M_PI / 4.0f; // same as road
+glm::vec3 mroadDir(cosf(mroadAngle), 0.0f, sinf(mroadAngle));
+
+// perpendicular (LEFT side of road)
+glm::vec3 leftDir(1*lroadDir.z, 0.0f, 2*lroadDir.x);
+
+float lwallSegmentCount = 1;
+float lwallSegmentLength = 1.0f;
+float lwallHeight = 1.8f;
+float lwallOffset = 1.0f; // distance from road center
+
+std::vector<float> wallMesh =
+    RenderObject::createRoundedBox(
+        20.5f,        // thin wall thickness
+        lwallHeight,
+        lwallSegmentLength,
+        roundness,
+        10
+    );
+
+glm::vec3 start =
+    greenPos - lroadDir * 4.0f; // start near opening, outside green
+
+for (int i = 0; i < lwallSegmentCount; i++)
+{
+    glm::vec3 segmentPos =
+        start + lroadDir * (i * lwallSegmentLength);
+
+    // push to LEFT side of road
+    segmentPos += leftDir * lwallOffset;
+
+    segmentPos.y =
+        getTee().y - (platformHeight * 0.5f)
+        + raisedOffset
+        + (wallHeight * 0.5f);
+
+    RenderObject* wallSeg =
+        new RenderObject(
+            wallMesh,
+            grassTexture,
+            0
+        );
+
+    wallSeg->setPosition(segmentPos);
+
+    wallSeg->setRotation(glm::vec3(
+        0.0f,
+        glm::degrees(lroadAngle) - 90.0f,
+        0.0f
+    ));
+
+    addObject(wallSeg);
+
+}
 
     // =========================================================
     // CUP
