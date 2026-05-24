@@ -9,9 +9,12 @@
 #include "src/Terrain.h"
 #include "src/SkyBox.h"
 #include "src/Hole.h"
+#include "src/Hole01.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
+#include "src/ObjectBuilder.h"
 #include "src/MathUtils.h"
+#include "src/drone.h"
 
 using namespace glm;
 using namespace std;
@@ -32,7 +35,7 @@ mat4 makeMVP(mat4 M, mat4 V, mat4 P) {
     return (P * (V * M));
 }
 
-static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp) {
+static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp, Drone& drone) {
     double speed = 5 * deltaTime;
 
     // Left-Front-Right-Back Movement
@@ -42,6 +45,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, 0, speed, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y, drone.position.z - speed);
+        cameraPos = vec3(cameraPos.x, cameraPos.y, cameraPos.z + speed);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
@@ -49,6 +55,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, 0, -speed, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y, drone.position.z + speed);
+        cameraPos = vec3(cameraPos.x, cameraPos.y, cameraPos.z - speed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
@@ -56,6 +65,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(-speed, 0, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x + speed, drone.position.y, drone.position.z);
+        cameraPos = vec3(cameraPos.x - speed, cameraPos.y, cameraPos.z);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
@@ -63,6 +75,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(speed, 0, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x - speed, drone.position.y, drone.position.z);
+        cameraPos = vec3(cameraPos.x + speed, cameraPos.y, cameraPos.z);
     }
 
     // View Center Rotation
@@ -70,12 +85,16 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     {
         view = glm::rotate(view, -float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x, drone.rotation.y + degrees(speed / 10), drone.rotation.z);
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
         view = glm::rotate(view, float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
         cameraAngle -= 0.0001f;
+
+        drone.rotation = vec3(drone.rotation.x, drone.rotation.y - degrees(speed / 10), drone.rotation.z);
     }
 
     // Up-Down Movement
@@ -85,6 +104,8 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, -speed, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y + speed, drone.position.z);
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
@@ -92,6 +113,8 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, speed, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y - speed, drone.position.z);
     }
 
     // Scene Scaling
@@ -137,16 +160,20 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, 0.01f, glm::vec3(1.0, 0.0, 0.0));
+        translation = glm::rotate(translation, +float(speed / 10), glm::vec3(1.0, 0.0, 0.0));
         view = view * translation;
         MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x - degrees(speed / 10), drone.rotation.y, drone.rotation.z);
     }
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, -0.01f, glm::vec3(1.0, 0.0, 0.0));
+        translation = glm::rotate(translation, -float(speed / 10), glm::vec3(1.0, 0.0, 0.0));
         view = view * translation;
         MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x + degrees(speed / 10), drone.rotation.y, drone.rotation.z);
     }
 }
 
@@ -336,6 +363,7 @@ int main()
 
         terrain.addBunker(0.0f,0.0f,30.0f, 13.5f);
         terrain.build();*/
+
         std::vector<std::string> faces = {
             "assets/skybox/Daylight Box_Right.bmp",
             "assets/skybox/Daylight Box_Left.bmp",
@@ -349,6 +377,7 @@ int main()
         // holes
         GLuint objectShader = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
         GLuint flagTexture  = loadBMPTexture("assets/course/white.bmp");
+        GLuint redTexture  = loadBMPTexture("assets/course/green.bmp");
         GLuint poleTexture  = loadBMPTexture("assets/course/wood.bmp");
         GLuint ballTexture  = loadBMPTexture("assets/course/white.bmp");
 
@@ -356,28 +385,21 @@ int main()
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
  
-        auto* flagstick = new RenderObject(
-        RenderObject::createCylinder(12),
-            poleTexture,
-            objectShader
-        );
-        flagstick->setPosition(glm::vec3(0.0f, 0.0f, 100.0f));   // at the pin
-        flagstick->setScale(glm::vec3(0.1f, 3.0f, 0.1f));        // thin and tall
+        auto* flag = new ObjectBuilder();
+        flag->makeFlag(poleTexture, flagTexture, objectShader);
 
-        auto* flag = new RenderObject(
-            RenderObject::createQuad(),
-            flagTexture,
-            objectShader
-        );
-        flag->setPosition(glm::vec3(0.5f, 2.7f, 100.0f));
-        flag->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));         // stand it up vertically
-        flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
+        auto* cone = new ObjectBuilder();
+        cone->makeBridge(flagTexture, objectShader);
+
+        auto* cone2 = new ObjectBuilder();
+        cone2->clone(cone);
 
         // Add them to Hole 1
-        Hole* hole1 = new Hole(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        hole1->addObject(flagstick);
-        hole1->addObject(flag);
+        Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        cone2->addObject(hole1);
+        //flag->addObject(hole1);
         course.addHole(std::unique_ptr<Hole>(hole1));
+
         auto* ball = new RenderObject(
             RenderObject::createSphere(16, 16),
             ballTexture,
@@ -385,11 +407,12 @@ int main()
         );
         ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
         ball->setScale(glm::vec3(0.4f)); 
-        hole1->addObject(ball);
-        course.addHole(std::unique_ptr<Hole>(hole1));
 
         // add course terrain
         course.build();
+        course.setShader(programId, objectShader);
+
+        Drone drone;
 
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
@@ -412,12 +435,13 @@ int main()
 
             skybox.render(&view[0][0], &projection[0][0]);
             course.render(&view[0][0], &projection[0][0], cameraPos, sun);
+            drone.render(&view[0][0], &projection[0][0], cameraPos, sun);
 
             currentTime = glfwGetTime();
             deltaTime = currentTime - lastTime;
             lastTime = currentTime;
 
-            processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp);
+            processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp, drone);
 
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && currentTime - delay > 0.5)
             {
@@ -486,6 +510,8 @@ int main()
 
             glfwSwapBuffers(window);
             glfwPollEvents();
+
+            //cout << "FPS: " << 1 / deltaTime << '\n';
         }
     } catch (const char* e) {
         cout << e << endl;
