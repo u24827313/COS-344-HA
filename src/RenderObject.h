@@ -55,6 +55,7 @@ class RenderObject {
         static std::vector<float> createCylinder(int segments = 16);
         static std::vector<float> createBox(float width = 1.0f, float height = 1.0f, float depth = 1.0f);
         static std::vector<float> createRoundedBox(float width = 1.0f, float height = 1.0f, float depth = 1.0f, float radius = 0.1f, int segments = 8);
+        static std::vector<float> createTrapezoid(float bottomWidth, float topWidth, float height, float thickness);
 };
 
 #endif

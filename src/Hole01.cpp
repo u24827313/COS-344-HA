@@ -78,7 +78,7 @@ void Hole01::design(Terrain& terrain) {
     float pathWidth = 2.3f;
     float pathHeight = 0.15f;
     float pathDepth = 8.0f; // Main length running along Z
-    float pathRounding = 0.02f;
+    float pathRounding = 0.03f;
 
     std::vector<float> pathData = RenderObject::createRoundedBox(pathWidth, pathHeight, pathDepth, pathRounding, 8);
     RenderObject* concretePath = new RenderObject(pathData, concreteTexture, 0);
@@ -94,12 +94,18 @@ void Hole01::design(Terrain& terrain) {
     addObject(concretePath);
 
     // --- CONCRETE PATHWAY (PART 2: CURVED LEFT TURN) ---
-    float turnSegmentLength = 1.0f;   // length of each curved section
-    int turnSegments = 9;            // more segments = smoother curve
+    int turnSegments = 8;            // more segments = smoother curve
     float totalCurveAngle = 45.0f;    // degrees of bend
 
-    std::vector<float> turnSegmentData = RenderObject::createRoundedBox(pathWidth, pathHeight, turnSegmentLength, pathRounding, 8);
+    float turnSegmentLength = 1.0f;       // advance distance (keep this)
+    float turnSegmentRender = 1.2f;       // render size slightly larger (add this)
 
+    // Use render length for the mesh
+    std::vector<float> turnSegmentData = RenderObject::createRoundedBox(
+        pathWidth, pathHeight, turnSegmentRender, 0.0f, 8
+    );
+
+   
     // Start the curve at the front end of the straight path
     glm::vec3 segmentCenter = glm::vec3(
         pathPos.x,
@@ -131,28 +137,64 @@ void Hole01::design(Terrain& terrain) {
     }
 
 
-    // --- GOLF HOLE (CUP) ---
-    float holeRadius = 0.15f;    
-    float holeDepth = 0.2f;      
+   // --- GOLF HOLE (CUP) ---
+    // --- POSITION TUNING SLIDER ---
+    // Change the Z offset to a negative value to move it closer to the mound (-Z).
+    // Try -1.5f or adjust it to find the perfect distance!
+    float pinMoundProximityZ = -1.5f; 
+
+    glm::vec3 pinPos = glm::vec3(
+        getTee().x + 1.5f,   // Keep the X position slightly right of center
+        getTee().y,
+        getTee().z + pinMoundProximityZ // Move it towards the mound side (-Z)
+    );
+    float holeRadius = 0.15f;
+    float holeDepth = 0.2f;
 
     std::vector<float> holeData = RenderObject::createCylinder(16);
-    
-    for (size_t j = 0; j < holeData.size(); j += 8) {
-        holeData[j + 0] *= holeRadius; 
-        holeData[j + 1] *= holeDepth;  
-        holeData[j + 2] *= holeRadius; 
-    }
+    RenderObject* golfHole = new RenderObject(holeData, stoneTexture, 0);
+    golfHole->setScale(glm::vec3(holeRadius, holeDepth, holeRadius));
 
-    RenderObject* golfHole = new RenderObject(holeData, 0, 0); 
-
-    glm::vec3 holePos = glm::vec3(
-        getPin().x, 
-        surfaceY - (holeDepth * 0.95f), 
-        getPin().z
-    );
-
-    golfHole->setPosition(holePos);
+    golfHole->setPosition(glm::vec3(pinPos.x, surfaceY - (holeDepth * 0.95f), pinPos.z));
     addObject(golfHole);
+
+    // --- FLAG POLE ---
+    float poleRadius = 0.02f;
+    float poleHeight = 1.2f;
+
+    std::vector<float> poleData = RenderObject::createCylinder(8);
+    RenderObject* flagPole = new RenderObject(poleData, concreteTexture, 0);
+    flagPole->setScale(glm::vec3(poleRadius, poleHeight, poleRadius));
+
+    glm::vec3 polePos = glm::vec3(
+        pinPos.x,
+        surfaceY, // automatically follows the new pinPos
+        pinPos.z
+    );
+    flagPole->setPosition(polePos);
+    addObject(flagPole);
+
+    // --- NEW TRIANGULAR FLAG USING TRAPEZOID ---
+    float flagBottomWidth = 0.5f; // The attachment edge height against the pole
+    float flagTopWidth    = 0.0f; // Squeezing the top to zero width turns it into a triangle!
+    float flagLength      = 0.4f; // How far out the flag waves horizontally
+    float flagThickness   = 0.01f;
+
+    // Call your new engine utility function
+    std::vector<float> flagData = RenderObject::createTrapezoid(flagBottomWidth, flagTopWidth, flagLength, flagThickness);
+    RenderObject* flag = new RenderObject(flagData, concreteTexture, concreteTexture);
+
+    // Because createTrapezoid generates the shape vertically oriented along its height axis, 
+    // roll it 90 degrees on the Z-axis to let it extend sideways out from the flagpole
+    flag->setRotation(glm::vec3(0.0f, 0.0f, -90.0f));
+
+    glm::vec3 flagPos = glm::vec3(
+        pinPos.x + flagLength / 2.0f,
+        surfaceY + poleHeight - (flagBottomWidth / 2.0f) - raisedHeightOffset, 
+        pinPos.z
+    );
+    flag->setPosition(flagPos);
+    addObject(flag);
 
     // I need to add a wooden border
     // Let's make it an elongated beam. 

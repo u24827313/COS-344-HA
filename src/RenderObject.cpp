@@ -204,6 +204,86 @@ std::vector<float> RenderObject::createCylinder(int segments) {
     return data;
 }
 
+std::vector<float> RenderObject::createTrapezoid(float bottomWidth, float topWidth, float height, float thickness) {
+    std::vector<float> vertices;
+
+    float hwBottom = bottomWidth / 2.0f;
+    float hwTop = topWidth / 2.0f;
+    float hh = height / 2.0f;
+    float ht = thickness / 2.0f;
+
+    // Front Face Vertices (Z = +ht)
+    // Top-Left, Top-Right, Bottom-Right, Bottom-Left
+    float fTL[3] = { -hwTop,    hh,  ht };
+    float fTR[3] = {  hwTop,    hh,  ht };
+    float fBR[3] = {  hwBottom, -hh,  ht };
+    float fBL[3] = { -hwBottom, -hh,  ht };
+
+    // Back Face Vertices (Z = -ht)
+    float bTL[3] = { -hwTop,    hh, -ht };
+    float bTR[3] = {  hwTop,    hh, -ht };
+    float bBR[3] = {  hwBottom, -hh, -ht };
+    float bBL[3] = { -hwBottom, -hh, -ht };
+
+    // Helper lambda to easily pack a quad face vertex format: X, Y, Z, U, V, NX, NY, NZ
+    // Helper lambda to safely append a quad face vertex format: X, Y, Z, U, V, NX, NY, NZ
+    auto addQuad = [&](float p1[3], float p2[3], float p3[3], float p4[3], float nx, float ny, float nz) {
+        // Triangle 1
+        // Vertex 1 (p1)
+        vertices.push_back(p1[0]); vertices.push_back(p1[1]); vertices.push_back(p1[2]);
+        vertices.push_back(0.0f);  vertices.push_back(1.0f);
+        vertices.push_back(nx);    vertices.push_back(ny);    vertices.push_back(nz);
+
+        // Vertex 2 (p4)
+        vertices.push_back(p4[0]); vertices.push_back(p4[1]); vertices.push_back(p4[2]);
+        vertices.push_back(0.0f);  vertices.push_back(0.0f);
+        vertices.push_back(nx);    vertices.push_back(ny);    vertices.push_back(nz);
+
+        // Vertex 3 (p2)
+        vertices.push_back(p2[0]); vertices.push_back(p2[1]); vertices.push_back(p2[2]);
+        vertices.push_back(1.0f);  vertices.push_back(1.0f);
+        vertices.push_back(nx);    vertices.push_back(ny);    vertices.push_back(nz);
+
+
+        // Triangle 2
+        // Vertex 1 (p2)
+        vertices.push_back(p2[0]); vertices.push_back(p2[1]); vertices.push_back(p2[2]);
+        vertices.push_back(1.0f);  vertices.push_back(1.0f);
+        vertices.push_back(nx);    vertices.push_back(ny);    vertices.push_back(nz);
+
+        // Vertex 2 (p4)
+        vertices.push_back(p4[0]); vertices.push_back(p4[1]); vertices.push_back(p4[2]);
+        vertices.push_back(0.0f);  vertices.push_back(0.0f);
+        vertices.push_back(nx);    vertices.push_back(ny);    vertices.push_back(nz);
+
+        // Vertex 3 (p3)
+        vertices.push_back(p3[0]); vertices.push_back(p3[1]); vertices.push_back(p3[2]);
+        vertices.push_back(1.0f);  vertices.push_back(0.0f);
+        vertices.push_back(nx);    vertices.push_back(ny);    vertices.push_back(nz);
+    };
+
+    // 1. Front face
+    addQuad(fTL, fTR, fBR, fBL, 0.0f, 0.0f, 1.0f);
+    // 2. Back face
+    addQuad(bTR, bTL, bBL, bBR, 0.0f, 0.0f, -1.0f);
+    // 3. Top face
+    addQuad(bTL, bTR, fTR, fTL, 0.0f, 1.0f, 0.0f);
+    // 4. Bottom face
+    addQuad(fBL, fBR, bBR, bBL, 0.0f, -1.0f, 0.0f);
+
+    // 5. Left face slope normal calculation
+    glm::vec3 leftEdge = glm::vec3(fTL[0] - fBL[0], fTL[1] - fBL[1], 0.0f);
+    glm::vec3 leftNormal = glm::normalize(glm::vec3(-leftEdge.y, leftEdge.x, 0.0f));
+    addQuad(bTL, fTL, fBL, bBL, leftNormal.x, leftNormal.y, 0.0f);
+
+    // 6. Right face slope normal calculation
+    glm::vec3 rightEdge = glm::vec3(fTR[0] - fBR[0], fTR[1] - fBR[1], 0.0f);
+    glm::vec3 rightNormal = glm::normalize(glm::vec3(rightEdge.y, -rightEdge.x, 0.0f));
+    addQuad(fTR, bTR, bBR, fBR, rightNormal.x, rightNormal.y, 0.0f);
+
+    return vertices;
+}
+
 std::vector<float> RenderObject::createBox(float width, float height, float depth) {
     std::vector<float> data;
     
