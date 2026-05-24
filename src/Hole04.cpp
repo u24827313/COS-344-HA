@@ -413,3 +413,4 @@ for (int i = 0; i < lwallSegmentCount; i++)
     cup->setPosition(cupPos);
     addObject(cup);
 }
+}
