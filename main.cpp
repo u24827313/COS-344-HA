@@ -12,6 +12,8 @@
 #include "src/Hole01.h"
 #include "src/Hole02.h"
 #include "src/Hole03.h"
+//#include "src/Hole04.h"
+#include "src/Hole13.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/ObjectBuilder.h"
@@ -86,14 +88,14 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     // View Center Rotation
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        view = glm::rotate(view, -float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
 
         drone.rotation = vec3(drone.rotation.x, drone.rotation.y + degrees(speed / 10), drone.rotation.z);
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        view = glm::rotate(view, float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, -float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
         cameraAngle -= 0.0001f;
 
@@ -453,35 +455,51 @@ int main()
         auto* flag = new ObjectBuilder();
         flag->makeFlag(poleTexture, flagTexture, objectShader);
 
-        auto* cone = new ObjectBuilder();
-        cone->makeMarker(flagTexture, objectShader);
+        auto* wallTower = new ObjectBuilder();
+        wallTower->makeWallTower(flagTexture, objectShader);
 
-        auto* ball = new RenderObject(
-            RenderObject::createSphere(16, 16),
-            ballTexture,
-            objectShader
-        );
-        ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
-        ball->setScale(glm::vec3(0.4f)); 
+        auto* loop = new ObjectBuilder();
+        loop->makeLoop(flagTexture, objectShader);
+
+        auto* bridge = new ObjectBuilder();
+        bridge->makeBridge(flagTexture, objectShader);
+
+        auto* volcano = new ObjectBuilder();
+        volcano->makeVolcano(flagTexture, objectShader);
+
+        auto* marker = new ObjectBuilder();
+        marker->makeMarker(flagTexture, objectShader);
+
+        auto* podium = new ObjectBuilder();
+        podium->makePodium(flagTexture, objectShader);
+
+        auto* shade = new ObjectBuilder();
+        shade->makeShade(flagTexture, objectShader);
+
+        auto* lamp = new ObjectBuilder();
+        lamp->makeLamp(flagTexture, objectShader);
+
+        auto* signpost = new ObjectBuilder();
+        signpost->makeSignpost(flagTexture, objectShader);
 
         // Duplicate Objects
 
-        auto* cone2 = new ObjectBuilder();
-        cone2->clone(cone);
+
 
         // Build Holes        
 
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        //cone2->addObject(hole1);
-        //flag->addObject(hole1);
-        //cone2->setPosition(vec3(0.0f, 1.0f, 0.0f));
         Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        //Hole04* hole4 = new Hole04(4, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
 
         // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
+        //course.addHole(std::unique_ptr<Hole>(hole4));
+        course.addHole(std::unique_ptr<Hole>(hole13));
 
         course.build();
         course.setShader(programId, objectShader);

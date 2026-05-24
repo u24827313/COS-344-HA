@@ -30,7 +30,6 @@ class ObjectBuilder {
         void render(const float* view, const float* projection, const glm::vec3& cameraPos, const DirectionalLight& light);
         void addObject(Hole* h);
 
-        void makeBarn(GLuint texture_, GLuint shaderProgram_);
         void makeWallTower(GLuint texture_, GLuint shaderProgram_);
         void makeLoop(GLuint texture_, GLuint shaderProgram_);
         void makeBridge(GLuint texture_, GLuint shaderProgram_);

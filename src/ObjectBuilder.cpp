@@ -82,11 +82,6 @@ void ObjectBuilder::addObject(Hole *h)
     }
 }
 
-void ObjectBuilder::makeBarn(GLuint texture_, GLuint shaderProgram_)
-{
-    
-}
-
 void ObjectBuilder::makeWallTower(GLuint texture_, GLuint shaderProgram_)
 {
     auto* cone1 = new RenderObject(
@@ -339,20 +334,123 @@ void ObjectBuilder::makeMarker(GLuint texture_, GLuint shaderProgram_)
 
 void ObjectBuilder::makePodium(GLuint texture_, GLuint shaderProgram_)
 {
+    auto* base1 = new RenderObject(
+        RenderObject::createBox(1.0f, 0.5f, 1.0f),
+            texture_,
+            shaderProgram_
+        );
+    base1->setPosition(glm::vec3(-1.0f, 0.2f, 0.1f));
 
+    auto* base2 = new RenderObject(
+        RenderObject::createBox(1.0f, 0.5f, 1.0f),
+            texture_,
+            shaderProgram_
+        );
+    base2->setPosition(glm::vec3(0.0f, 0.3f, 0.0f));
+
+    auto* base3 = new RenderObject(
+        RenderObject::createBox(1.0f, 0.5f, 1.0f),
+            texture_,
+            shaderProgram_
+        );
+    base3->setPosition(glm::vec3(1.0f, 0.1f, 0.1f));
+    
+    objects.push_back(base1);
+    objects.push_back(base2);
+    objects.push_back(base3);
 }
 
 void ObjectBuilder::makeShade(GLuint texture_, GLuint shaderProgram_)
 {
+    auto* stickA = new RenderObject(
+        RenderObject::createCylinder(6),
+            texture_,
+            shaderProgram_
+        );
+    stickA->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));   // at the pin
+    stickA->setScale(glm::vec3(0.05f, 3.0f, 0.05f));
 
+    auto* stickB = new RenderObject(
+        RenderObject::createCylinder(6),
+            texture_,
+            shaderProgram_
+        );
+    stickB->setPosition(glm::vec3(0.0f, 3.0f, 0.0f));   // at the pin
+    stickB->setScale(glm::vec3(0.05f, 2.0f, 0.05f));
+    stickB->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));
+
+    auto* shade = new RenderObject(
+        RenderObject::createCone(4),
+            texture_,
+            shaderProgram_
+        );
+    shade->setPosition(glm::vec3(0.0f, 2.0f, 2.0f));   // at the pin
+    shade->setScale(glm::vec3(2.0f, 1.0f, 2.0f));
+
+    objects.push_back(stickA);
+    objects.push_back(stickB);
+    objects.push_back(shade);
 }
 
 void ObjectBuilder::makeLamp(GLuint texture_, GLuint shaderProgram_)
 {
+    auto* stick = new RenderObject(
+        RenderObject::createCylinder(6),
+            texture_,
+            shaderProgram_
+        );
+    stick->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));   // at the pin
+    stick->setScale(glm::vec3(0.05f, 2.0f, 0.05f));
 
+    auto* base = new RenderObject(
+        RenderObject::createCone(4),
+            texture_,
+            shaderProgram_
+        );
+    base->setPosition(glm::vec3(0.0f, 1.75f, 0.0f));   // at the pin
+    base->setScale(glm::vec3(0.3f, 0.1f, 0.3f));
+    base->setRotation(glm::vec3(180.0f, 0.0f, 0.0f));
+
+    auto* top = new RenderObject(
+        RenderObject::createCone(4),
+            texture_,
+            shaderProgram_
+        );
+    top->setPosition(glm::vec3(0.0f, 2.0f, 0.0f));   // at the pin
+    top->setScale(glm::vec3(0.4f, 0.1f, 0.4f));
+
+    objects.push_back(stick);
+    objects.push_back(base);
+    objects.push_back(top);
 }
 
 void ObjectBuilder::makeSignpost(GLuint texture_, GLuint shaderProgram_)
 {
+    auto* stick = new RenderObject(
+        RenderObject::createCylinder(6),
+            texture_,
+            shaderProgram_
+        );
+    stick->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));   // at the pin
+    stick->setScale(glm::vec3(0.1f, 3.0f, 0.1f));
 
+    auto* plate1 = new RenderObject(
+        RenderObject::createBox(0.1f, 0.2f, 1.0f),
+            texture_,
+            shaderProgram_
+        );
+    plate1->setPosition(glm::vec3(0.0f, 2.5f, 0.5f));
+    plate1->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+
+    auto* plate2 = new RenderObject(
+        RenderObject::createBox(0.1f, 0.2f, 1.0f),
+            texture_,
+            shaderProgram_
+        );
+    plate2->setPosition(glm::vec3(0.5f, 2.6f, 0.0f));
+    plate2->setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
+
+    objects.push_back(stick);
+    objects.push_back(plate1);
+    objects.push_back(plate2);
 }
