@@ -190,3 +190,139 @@ std::vector<float> RenderObject::createCylinder(int segments) {
     }
     return data;
 }
+
+std::vector<float> RenderObject::createBox(float width, float height, float depth) {
+    std::vector<float> data;
+    
+    float w = width * 0.5f;
+    float h = height * 0.5f;
+    float d = depth * 0.5f;
+
+    auto pushFace = [&](
+        float x1, float y1, float z1,
+        float x2, float y2, float z2,
+        float x3, float y3, float z3,
+        float x4, float y4, float z4,
+        float nx, float ny, float nz) {
+        
+        auto push = [&](float x, float y, float z, float u, float v) {
+            data.push_back(x); data.push_back(y); data.push_back(z);
+            data.push_back(nx); data.push_back(ny); data.push_back(nz);
+            data.push_back(u); data.push_back(v);
+        };
+
+        // Triangle 1: p1, p2, p3
+        push(x1, y1, z1, 0.0f, 1.0f);
+        push(x2, y2, z2, 1.0f, 1.0f);
+        push(x3, y3, z3, 1.0f, 0.0f);
+        
+        // Triangle 2: p1, p3, p4
+        push(x1, y1, z1, 0.0f, 1.0f);
+        push(x3, y3, z3, 1.0f, 0.0f);
+        push(x4, y4, z4, 0.0f, 0.0f);
+    };
+
+    // Front face (+Z)
+    pushFace(-w, -h,  d,   w, -h,  d,   w,  h,  d,  -w,  h,  d,   0,0,1);
+    // Back face (-Z)
+    pushFace( w, -h, -d,  -w, -h, -d,  -w,  h, -d,   w,  h, -d,   0,0,-1);
+    // Top face (+Y)
+    pushFace(-w,  h, -d,   w,  h, -d,   w,  h,  d,  -w,  h,  d,   0,1,0);
+    // Bottom face (-Y)
+    pushFace(-w, -h,  d,   w, -h,  d,   w, -h, -d,  -w, -h, -d,   0,-1,0);
+    // Right face (+X)
+    pushFace( w, -h, -d,   w, -h,  d,   w,  h,  d,   w,  h, -d,   1,0,0);
+    // Left face (-X)
+    pushFace(-w, -h,  d,  -w, -h, -d,  -w,  h, -d,  -w,  h,  d,  -1,0,0);
+
+    return data;
+}
+
+std::vector<float> RenderObject::createRoundedBox(float width, float height, float depth, float radius, int subdivisions) {
+    std::vector<float> data;
+
+    float hw = width / 2.0f;
+    float hh = height / 2.0f;
+    float hd = depth / 2.0f;
+
+    auto pushVert = [&](float x, float y, float z, float nx, float ny, float nz, float u, float v) {
+        data.push_back(x);  data.push_back(y);  data.push_back(z);  
+        data.push_back(nx); data.push_back(ny); data.push_back(nz); 
+        data.push_back(u);  data.push_back(v);                      
+    };
+
+    for (int face = 0; face < 6; ++face) {
+        for (int i = 0; i < subdivisions; ++i) {
+            for (int j = 0; j < subdivisions; ++j) {
+                
+                float u0 = (float)i / subdivisions;
+                float v0 = (float)j / subdivisions;
+                float u1 = (float)(i + 1) / subdivisions;
+                float v1 = (float)(j + 1) / subdivisions;
+
+                float x[4], y[4], z[4];
+                float nx[4], ny[4], nz[4]; // Array to store individual vertex normals
+
+                auto getFacePoint = [&](float u, float v, float& outX, float& outY, float& outZ, float& outNX, float& outNY, float& outNZ) {
+                    float a = -1.0f + 2.0f * u;
+                    float b = -1.0f + 2.0f * v;
+
+                    if (face == 0) { outX =  hw * a; outY =  hh * b; outZ =  hd;     } // Front
+                    if (face == 1) { outX =  hw * a; outY =  hh * b; outZ = -hd;     } // Back
+                    if (face == 2) { outX =  hw * a; outY =  hh;     outZ =  hd * b; } // Top
+                    if (face == 3) { outX =  hw * a; outY = -hh;     outZ =  hd * b; } // Bottom
+                    if (face == 4) { outX =  hw;     outY =  hh * a; outZ =  hd * b; } // Right
+                    if (face == 5) { outX = -hw;     outY =  hh * a; outZ =  hd * b; } // Left
+
+                    // Find inner rigid boundary box coordinates 
+                    float cx = fmaxf(-hw + radius, fminf(outX, hw - radius));
+                    float cy = fmaxf(-hh + radius, fminf(outY, hh - radius));
+                    float cz = fmaxf(-hd + radius, fminf(outZ, hd - radius));
+
+                    // Direction vector tracking outward offset from inner boundary
+                    float dx = outX - cx;
+                    float dy = outY - cy;
+                    float dz = outZ - cz;
+                    float len = sqrtf(dx * dx + dy * dy + dz * dz);
+
+                    if (len > 0.001f) {
+                        // Mathematically perfect Outward Normal vector
+                        outNX = dx / len;
+                        outNY = dy / len;
+                        outNZ = dz / len;
+
+                        // Final physical vertex position surface displacement
+                        outX = cx + outNX * radius;
+                        outY = cy + outNY * radius;
+                        outZ = cz + outNZ * radius;
+                    } else {
+                        // Fallback fallback normal for completely flat center points of the faces
+                        if (face == 0) { outNX = 0.0f;  outNY = 0.0f;  outNZ = 1.0f;  }
+                        if (face == 1) { outNX = 0.0f;  outNY = 0.0f;  outNZ = -1.0f; }
+                        if (face == 2) { outNX = 0.0f;  outNY = 1.0f;  outNZ = 0.0f;  }
+                        if (face == 3) { outNX = 0.0f;  outNY = -1.0f; outNZ = 0.0f;  }
+                        if (face == 4) { outNX = 1.0f;  outNY = 0.0f;  outNZ = 0.0f;  }
+                        if (face == 5) { outNX = -1.0f; outNY = 0.0f;  outNZ = 0.0f;  }
+                    }
+                };
+
+                // Sample positions AND exact outward normals for all 4 corners of the grid cell
+                getFacePoint(u0, v0, x[0], y[0], z[0], nx[0], ny[0], nz[0]);
+                getFacePoint(u1, v0, x[1], y[1], z[1], nx[1], ny[1], nz[1]);
+                getFacePoint(u1, v1, x[2], y[2], z[2], nx[2], ny[2], nz[2]);
+                getFacePoint(u0, v1, x[3], y[3], z[3], nx[3], ny[3], nz[3]);
+
+                // Triangle 1 (using precise matching vertex normals instead of shared cross-products)
+                pushVert(x[0], y[0], z[0], nx[0], ny[0], nz[0], u0, v0);
+                pushVert(x[1], y[1], z[1], nx[1], ny[1], nz[1], u1, v0);
+                pushVert(x[2], y[2], z[2], nx[2], ny[2], nz[2], u1, v1);
+
+                // Triangle 2
+                pushVert(x[0], y[0], z[0], nx[0], ny[0], nz[0], u0, v0);
+                pushVert(x[2], y[2], z[2], nx[2], ny[2], nz[2], u1, v1);
+                pushVert(x[3], y[3], z[3], nx[3], ny[3], nz[3], u0, v1);
+            }
+        }
+    }
+    return data;
+}

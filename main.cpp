@@ -9,6 +9,7 @@
 #include "src/Terrain.h"
 #include "src/SkyBox.h"
 #include "src/Hole.h"
+#include "src/Hole01.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/MathUtils.h"
@@ -374,7 +375,7 @@ int main()
         flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
 
         // Add them to Hole 1
-        Hole* hole1 = new Hole(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         hole1->addObject(flagstick);
         hole1->addObject(flag);
         course.addHole(std::unique_ptr<Hole>(hole1));
@@ -385,11 +386,12 @@ int main()
         );
         ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
         ball->setScale(glm::vec3(0.4f)); 
-        hole1->addObject(ball);
-        course.addHole(std::unique_ptr<Hole>(hole1));
+        //hole1->addObject(ball);
+        //course.addHole(std::unique_ptr<Hole>(hole1));
 
         // add course terrain
         course.build();
+        course.setShader(programId, objectShader);
 
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
