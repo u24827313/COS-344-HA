@@ -1,0 +1,3 @@
+Run with: make all
+
+Check controls.txt for movement controls

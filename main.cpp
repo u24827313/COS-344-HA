@@ -12,10 +12,13 @@
 #include "src/Hole01.h"
 #include "src/Hole02.h"
 #include "src/Hole03.h"
+//#include "src/Hole04.h"
+#include "src/Hole13.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
+#include "src/ObjectBuilder.h"
 #include "src/MathUtils.h"
-#include "src/Hole14.h"
+#include "src/drone.h"
 
 using namespace glm;
 using namespace std;
@@ -27,6 +30,7 @@ static float lastX = 750.0f;
 static float lastY = 500.0f;  
 static bool  firstMouse = true;
 static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+static bool nightView = false, droneView = false;
 
 static double lastTime, currentTime, deltaTime;
 int state = 0;
@@ -36,7 +40,7 @@ mat4 makeMVP(mat4 M, mat4 V, mat4 P) {
     return (P * (V * M));
 }
 
-static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp) {
+static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &projection, mat4 &MVP, float &cameraAngle, vec3 &cameraPos, vec3 &cameraUp, Drone& drone) {
     double speed = 5 * deltaTime;
 
     // Left-Front-Right-Back Movement
@@ -46,6 +50,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, 0, speed, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y, drone.position.z - speed);
+        cameraPos = vec3(cameraPos.x, cameraPos.y, cameraPos.z + speed);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
@@ -53,6 +60,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, 0, -speed, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y, drone.position.z + speed);
+        cameraPos = vec3(cameraPos.x, cameraPos.y, cameraPos.z - speed);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
@@ -60,6 +70,9 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(-speed, 0, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x + speed, drone.position.y, drone.position.z);
+        cameraPos = vec3(cameraPos.x - speed, cameraPos.y, cameraPos.z);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
@@ -67,19 +80,26 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(speed, 0, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x - speed, drone.position.y, drone.position.z);
+        cameraPos = vec3(cameraPos.x + speed, cameraPos.y, cameraPos.z);
     }
 
     // View Center Rotation
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        view = glm::rotate(view, -float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x, drone.rotation.y + degrees(speed / 10), drone.rotation.z);
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        view = glm::rotate(view, float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::rotate(view, -float(speed / 10), glm::vec3(0.0f, 1.0f, 0.0f));
         MVP = makeMVP(model, view, projection);
         cameraAngle -= 0.0001f;
+
+        drone.rotation = vec3(drone.rotation.x, drone.rotation.y - degrees(speed / 10), drone.rotation.z);
     }
 
     // Up-Down Movement
@@ -89,6 +109,8 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, -speed, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y + speed, drone.position.z);
     }
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
@@ -96,6 +118,8 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         translation[3] = vec4(0, speed, 0, 1);
         view = translation * view;
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(drone.position.x, drone.position.y - speed, drone.position.z);
     }
 
     // Scene Scaling
@@ -136,20 +160,92 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
         projection = perspective(glm::radians(45.0f), aspect, 1.0f, -500.0f);
 
         MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(0.0f, 2.0f, 10.0f);
+        drone.rotation = vec3(0.0f);
     }
 
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, 0.01f, glm::vec3(1.0, 0.0, 0.0));
+        translation = glm::rotate(translation, +float(speed / 10), glm::vec3(1.0, 0.0, 0.0));
         view = view * translation;
         MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x - degrees(speed / 10), drone.rotation.y, drone.rotation.z);
     }
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, -0.01f, glm::vec3(1.0, 0.0, 0.0));
+        translation = glm::rotate(translation, -float(speed / 10), glm::vec3(1.0, 0.0, 0.0));
         view = view * translation;
+        MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x + degrees(speed / 10), drone.rotation.y, drone.rotation.z);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && currentTime - delay > 0.2)
+    {
+        delay = currentTime;
+        droneView = !droneView;
+
+        int fbWidth, fbHeight;
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+        float aspect = (float)fbWidth / (float)fbHeight;
+
+        model = mat4(1.0f);
+        cameraAngle = 0.0f;
+        cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
+        view = lookAt(
+            cameraPos,               // Camera position
+            cameraPos + cameraFront, // Look at point
+            cameraUp                 // Up vector
+        );
+        projection = perspective(glm::radians(45.0f), aspect, 1.0f, -500.0f);
+
+        MVP = makeMVP(model, view, projection);
+
+        drone.position = vec3(0.0f, 2.0f, 10.0f);
+
+        if (droneView) {
+            mat4 translation = mat4(1.0f);
+            translation[3] = vec4(0, 0, -10.0, 1);
+            view = translation * view;
+            MVP = makeMVP(model, view, projection);
+        }
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS && currentTime - delay > 0.2)
+    {
+        delay = currentTime;
+        nightView = !nightView;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+    {
+        int fbWidth, fbHeight;
+        glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+        float aspect = (float)fbWidth / (float)fbHeight;
+
+        model = mat4(1.0f);
+        cameraAngle = 0.0f;
+        cameraPos = glm::vec3(0.0f, 2.0f, 10.0f);
+        cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
+        view = lookAt(
+            cameraPos,               // Camera position
+            cameraPos + cameraFront, // Look at point
+            cameraUp                 // Up vector
+        );
+        projection = perspective(glm::radians(45.0f), aspect, 1.0f, -500.0f);
+
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, radians(90.0f), glm::vec3(1.0, 0.0, 0.0));
+        view = view * translation;
+
+        translation = mat4(1.0f);
+        translation[3] = vec4(0, 0, -100, 1);
+        view = translation * view;
         MVP = makeMVP(model, view, projection);
     }
 }
@@ -306,13 +402,15 @@ int main()
         std::cout << "projectionLoc: " << projectionLoc << std::endl;
         std::cout << "colourLoc: " << colourLoc << std::endl;
         
-    
-        // light
+        // Light
+
         DirectionalLight sun;
         sun.direction = glm::normalize(glm::vec3(-0.3f, -1.0f, -0.2f));
         sun.colour    = glm::vec3(1.0f, 0.95f, 0.85f);
         sun.ambient   = 0.25f;
-        //
+
+        // Base
+
         GolfCourse course(
             "assets/terrain/grass.bmp",
             "assets/terrain/dirt.bmp",
@@ -320,27 +418,8 @@ int main()
             "assets/terrain/concrete.bmp",
             "assets/terrain/wood.bmp"
         );
-        
-        /*// object instantiation
-        Terrain terrain(
-            "assets/terrain/grass.bmp",
-            "assets/terrain/sand.bmp",
-            "assets/terrain/stone.bmp",
-            "assets/terrain/concrete.bmp",
-            "assets/terrain/wood.bmp",
-            200,
-            500.0f
-        );
-        // design the terrain
-        terrain.addBunker(30.0f, 80.0f, 15.0f, 4.0f);
-        terrain.addMound(30.0f, 80.0f, 15.0f, 3.0f);
-    
-        terrain.addBunker(-12.0f, 50.0f, 6.0f, 2.5f);
-        terrain.addMound(-12.0f, 50.0f, 6.0f, -1.5f);
 
-        terrain.addBunker(0.0f,0.0f,30.0f, 13.5f);
-        terrain.build();*/
-        std::vector<std::string> faces = {
+        std::vector<std::string> facesDay = {
             "assets/skybox/Daylight Box_Right.bmp",
             "assets/skybox/Daylight Box_Left.bmp",
             "assets/skybox/Daylight Box_Top.bmp",
@@ -348,59 +427,84 @@ int main()
             "assets/skybox/Daylight Box_Front.bmp",
             "assets/skybox/Daylight Box_Back.bmp"
         };
-        SkyBox skybox(faces);
 
-        // holes
+        std::vector<std::string> facesNight = {
+            "assets/skybox/Nightlight Box_Side.bmp",
+            "assets/skybox/Nightlight Box_Side.bmp",
+            "assets/skybox/Nightlight Box_Top.bmp",
+            "assets/skybox/Nightlight Box_Bottom.bmp",
+            "assets/skybox/Nightlight Box_Side.bmp",
+            "assets/skybox/Nightlight Box_Side.bmp"
+        };
+
+        SkyBox skyboxDay(facesDay);
+        SkyBox skyboxNight(facesNight);
+
+        // Textures
         GLuint objectShader = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
         GLuint flagTexture  = loadBMPTexture("assets/course/white.bmp");
+        GLuint redTexture  = loadBMPTexture("assets/course/green.bmp");
         GLuint poleTexture  = loadBMPTexture("assets/course/wood.bmp");
         GLuint ballTexture  = loadBMPTexture("assets/course/white.bmp");
 
-        // build a flag stick
         glm::vec3 cameraPos   = glm::vec3(0.0f, 2.0f, 10.0f);
         glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+        // Build Objects
  
-        auto* flagstick = new RenderObject(
-        RenderObject::createCylinder(12),
-            poleTexture,
-            objectShader
-        );
-        flagstick->setPosition(glm::vec3(0.0f, 0.0f, 100.0f));   // at the pin
-        flagstick->setScale(glm::vec3(0.1f, 3.0f, 0.1f));        // thin and tall
+        auto* flag = new ObjectBuilder();
+        flag->makeFlag(poleTexture, flagTexture, objectShader);
 
-        auto* flag = new RenderObject(
-            RenderObject::createQuad(),
-            flagTexture,
-            objectShader
-        );
-        flag->setPosition(glm::vec3(0.5f, 2.7f, 100.0f));
-        flag->setRotation(glm::vec3(90.0f, 0.0f, 0.0f));         // stand it up vertically
-        flag->setScale(glm::vec3(1.0f, 0.6f, 1.0f));
+        auto* wallTower = new ObjectBuilder();
+        wallTower->makeWallTower(flagTexture, objectShader);
 
-        // Add them to Hole 1
+        auto* loop = new ObjectBuilder();
+        loop->makeLoop(flagTexture, objectShader);
+
+        auto* bridge = new ObjectBuilder();
+        bridge->makeBridge(flagTexture, objectShader);
+
+        auto* volcano = new ObjectBuilder();
+        volcano->makeVolcano(flagTexture, objectShader);
+
+        auto* marker = new ObjectBuilder();
+        marker->makeMarker(flagTexture, objectShader);
+
+        auto* podium = new ObjectBuilder();
+        podium->makePodium(flagTexture, objectShader);
+
+        auto* shade = new ObjectBuilder();
+        shade->makeShade(flagTexture, objectShader);
+
+        auto* lamp = new ObjectBuilder();
+        lamp->makeLamp(flagTexture, objectShader);
+
+        auto* signpost = new ObjectBuilder();
+        signpost->makeSignpost(flagTexture, objectShader);
+
+        // Duplicate Objects
+
+
+
+        // Build Holes        
+
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        Hole14* hole14 = new Hole14(14, glm::vec3(20, 0, 0), glm::vec3(20, 0, 6));
-        course.addHole(std::unique_ptr<Hole>(hole14));
+        //Hole04* hole4 = new Hole04(4, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
+
+        // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
+        //course.addHole(std::unique_ptr<Hole>(hole4));
+        course.addHole(std::unique_ptr<Hole>(hole13));
 
-        
-        auto* ball = new RenderObject(
-            RenderObject::createSphere(16, 16),
-            ballTexture,
-            objectShader
-        );
-        ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
-        ball->setScale(glm::vec3(0.4f)); 
-        //hole1->addObject(ball);
-        //course.addHole(std::unique_ptr<Hole>(hole1));
-
-        // add course terrain
         course.build();
         course.setShader(programId, objectShader);
+
+        Drone drone;
 
         int fbWidth, fbHeight;
         glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
@@ -418,26 +522,39 @@ int main()
         glm::mat4 projection = makePerspective(glm::radians(45.0f), aspect, 0.1f, 500.0f);
         mat4 MVP = makeMVP(model, view, projection);
 
+        bool nightShader = false;
+
         while (!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            skybox.render(&view[0][0], &projection[0][0]);
+            if (nightView) {
+                skyboxNight.render(&view[0][0], &projection[0][0]);
+            } else {
+                skyboxDay.render(&view[0][0], &projection[0][0]);
+            }
+
+            
             course.render(&view[0][0], &projection[0][0], cameraPos, sun);
 
+            if (droneView) {
+                drone.render(&view[0][0], &projection[0][0], cameraPos, sun);
+            }
+            
             currentTime = glfwGetTime();
             deltaTime = currentTime - lastTime;
             lastTime = currentTime;
 
-            processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp);
+            processControls(window, view, model, projection, MVP, cameraAngle, cameraPos, cameraUp, drone);
 
-            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && currentTime - delay > 0.5)
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && currentTime - delay > 0.2 && !nightShader)
             {
                 delay = currentTime;
             
                 switch (state) {
                     case 0 : {
                         programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                        skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                        skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
                         course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
                                         LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl"));
                         state++;
@@ -445,7 +562,8 @@ int main()
                     }
                     case 1 : {
                         programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_invert.glsl"));
+                        skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_invert.glsl"));
+                        skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_invert.glsl"));
                         course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_invert.glsl"),
                                         LoadShaders("shaders/base/vertex.glsl", "shaders/base/invert.glsl"));
                         state++;
@@ -453,7 +571,8 @@ int main()
                     }
                     case 2 : {
                         programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_monochrome.glsl"));
+                        skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_monochrome.glsl"));
+                        skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_monochrome.glsl"));
                         course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_monochrome.glsl"),
                                         LoadShaders("shaders/base/vertex.glsl", "shaders/base/monochrome.glsl"));
                         state++;
@@ -461,7 +580,8 @@ int main()
                     }
                     case 3 : {
                         programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftdown.glsl"));
+                        skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftdown.glsl"));
+                        skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftdown.glsl"));
                         course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftdown.glsl"),
                                         LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftdown.glsl"));
                         state++;
@@ -469,7 +589,8 @@ int main()
                     }
                     case 4 : {
                         programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftup.glsl"));
+                        skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftup.glsl"));
+                        skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_shiftup.glsl"));
                         course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_shiftup.glsl"),
                                         LoadShaders("shaders/base/vertex.glsl", "shaders/base/shiftup.glsl"));
                         state++;
@@ -477,7 +598,8 @@ int main()
                     }
                     case 5 : {
                         programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
-                        skybox.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
+                        skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
+                        skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
                         course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_fragment.glsl"),
                                         LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl"));
                         state = 0;
@@ -486,17 +608,30 @@ int main()
                 }
             }
 
-            // Night View
-            if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+            if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && currentTime - delay > 0.2)
             {
-                mat4 translation = mat4(1.0f);
-                translation = glm::rotate(translation, -0.01f, glm::vec3(1.0, 0.0, 0.0));
-                view = view * translation;
-                MVP = makeMVP(model, view, projection);
+                delay = currentTime;
+            
+                if (nightShader) {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
+                    skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                    skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
+                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl"));    
+                } else {
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
+                    skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                    skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
+                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl")); 
+                }
+                
             }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
+
+            //cout << "FPS: " << 1 / deltaTime << '\n';
         }
     } catch (const char* e) {
         cout << e << endl;
