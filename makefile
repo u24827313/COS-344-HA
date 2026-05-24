@@ -1,8 +1,8 @@
 CXX      = g++
 CXXFLAGS = -g -Wall
-LDFLAGS  = -lglfw -lGLEW -pthread -ldl -lGL
+LDFLAGS  = -lglfw3 -lGLEW -pthread -ldl -lGL
 
-SOURCES = main.cpp src/shader.cpp src/SkyBox.cpp src/Terrain.cpp src/Hole.cpp src/Hole01.cpp src/Hole02.cpp src/Hole03.cpp src/GolfCourse.cpp src/RenderObject.cpp src/TextureLoader.cpp
+SOURCES = main.cpp src/shader.cpp src/SkyBox.cpp src/Terrain.cpp src/Hole.cpp src/GolfCourse.cpp src/RenderObject.cpp src/TextureLoader.cpp src/drone.cpp src/Hole01.cpp src/Hole02.cpp src/Hole03.cpp src/ObjectBuilder.cpp
 TARGET  = main
 
 $(TARGET): $(SOURCES)
