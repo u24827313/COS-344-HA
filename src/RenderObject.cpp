@@ -165,7 +165,13 @@ std::vector<float> RenderObject::createSphere(int parralels, int meridians) {
 
 std::vector<float> RenderObject::createCylinder(int segments) {
     std::vector<float> data;
-    // Build the side as `segments` quads around the Y axis.
+
+    auto pushVert = [&](float px, float py, float pz,
+                        float nx, float ny, float nz,
+                        float u,  float v) {
+        data.insert(data.end(), { px, py, pz, nx, ny, nz, u, v });
+    };
+
     for (int i = 0; i < segments; ++i) {
         float a0 = (float)i       / segments * 2.0f * (float)M_PI;
         float a1 = (float)(i + 1) / segments * 2.0f * (float)M_PI;
@@ -174,19 +180,26 @@ std::vector<float> RenderObject::createCylinder(int segments) {
         float u0 = (float)i       / segments;
         float u1 = (float)(i + 1) / segments;
 
-        // Bottom-left, bottom-right, top-right, top-left
-        // Position: (c, y, s)  Normal: (c, 0, s)  UV: (u, v)
-        float bl[8] = { c0, 0, s0,  c0, 0, s0,  u0, 0 };
-        float br[8] = { c1, 0, s1,  c1, 0, s1,  u1, 0 };
-        float tr[8] = { c1, 1, s1,  c1, 0, s1,  u1, 1 };
-        float tl[8] = { c0, 1, s0,  c0, 0, s0,  u0, 1 };
+        // --- Side wall (normals point outward, unaffected by Y scale) ---
+        pushVert(c0, 0, s0,  c0, 0, s0,  u0, 0);
+        pushVert(c1, 0, s1,  c1, 0, s1,  u1, 0);
+        pushVert(c1, 1, s1,  c1, 0, s1,  u1, 1);
 
-        auto pushVert = [&](const float* v) {
-            for (int k = 0; k < 8; ++k) data.push_back(v[k]);
-        };
+        pushVert(c1, 1, s1,  c1, 0, s1,  u1, 1);
+        pushVert(c0, 1, s0,  c0, 0, s0,  u0, 1);
+        pushVert(c0, 0, s0,  c0, 0, s0,  u0, 0);
 
-        pushVert(bl); pushVert(br); pushVert(tr);
-        pushVert(tr); pushVert(tl); pushVert(bl);
+        // --- Top cap (y=1, normal up) ---
+        float uMid = 0.5f + 0.5f * cosf((a0 + a1) * 0.5f);
+        float vMid = 0.5f + 0.5f * sinf((a0 + a1) * 0.5f);
+        pushVert(0,  1, 0,   0, 1, 0,  0.5f, 0.5f);
+        pushVert(c0, 1, s0,  0, 1, 0,  0.5f + 0.5f * c0, 0.5f + 0.5f * s0);
+        pushVert(c1, 1, s1,  0, 1, 0,  0.5f + 0.5f * c1, 0.5f + 0.5f * s1);
+
+        // --- Bottom cap (y=0, normal down) ---
+        pushVert(0,  0, 0,   0, -1, 0,  0.5f, 0.5f);
+        pushVert(c1, 0, s1,  0, -1, 0,  0.5f + 0.5f * c1, 0.5f + 0.5f * s1);
+        pushVert(c0, 0, s0,  0, -1, 0,  0.5f + 0.5f * c0, 0.5f + 0.5f * s0);
     }
     return data;
 }

@@ -76,7 +76,7 @@ void Hole01::design(Terrain& terrain) {
 
     // --- CONCRETE PATHWAY (PART 1: MAIN STRAIGHT ROAD) ---
     float pathWidth = 2.3f;
-    float pathHeight = 0.05f;
+    float pathHeight = 0.15f;
     float pathDepth = 8.0f; // Main length running along Z
     float pathRounding = 0.02f;
 
@@ -87,7 +87,7 @@ void Hole01::design(Terrain& terrain) {
     float pathOutwardOffset = 0.8f; 
     glm::vec3 pathPos = glm::vec3(
         getTee().x - halfWidth - pathOutwardOffset, 
-        surfaceY + (pathHeight / 2.0f) - 0.03f, // slightly sunk to look flush
+        surfaceY + (pathHeight / 2.0f) - 0.15f, // slightly sunk to look flush
         getTee().z
     );
     concretePath->setPosition(pathPos);
@@ -95,7 +95,7 @@ void Hole01::design(Terrain& terrain) {
 
     // --- CONCRETE PATHWAY (PART 2: CURVED LEFT TURN) ---
     float turnSegmentLength = 1.0f;   // length of each curved section
-    int turnSegments = 6;            // more segments = smoother curve
+    int turnSegments = 9;            // more segments = smoother curve
     float totalCurveAngle = 45.0f;    // degrees of bend
 
     std::vector<float> turnSegmentData = RenderObject::createRoundedBox(pathWidth, pathHeight, turnSegmentLength, pathRounding, 8);
@@ -183,7 +183,48 @@ void Hole01::design(Terrain& terrain) {
     border->setPosition(borderPos);
     addObject(border);
 
-    //Need to add now a rounded curve
+    // --- MOUND DIVIDER (front -Z side, away from rocks/wood/concrete) ---
+    float moundRadius = 3.0f;
+    float moundHeight = 1.0f;
+
+    terrain.addMound(
+        getTee().x,
+        getTee().z - (platformDepth / 2.0f) - 3.0f,  // always flush to the edge
+        moundRadius,
+        moundHeight
+    );
+
+// --- ROCKS ON FAR SIDE OF MOUND ---
+int numMoundRocks = 7;
+float moundCenterX = getTee().x;
+float moundCenterZ = getTee().z - (platformDepth / 2.0f) - 3.0f;
+
+for (int i = 0; i < numMoundRocks; ++i) {
+    float t = (float)i / (numMoundRocks - 1); // 0..1
+    
+    // Arc across the far half of the mound (180 degrees away from platform)
+    float arcAngle = (float)M_PI + t * (float)M_PI; // pi to 2pi = far semicircle
+    
+    float rockRadius = 0.35f + (static_cast<float>(rand()) / RAND_MAX) * 0.3f;
+    
+    // Place rocks at the mound's perimeter on the far side
+    float rockX = moundCenterX + cosf(arcAngle) * (moundRadius - 0.5f);
+    float rockZ = moundCenterZ + sinf(arcAngle) * (moundRadius - 0.5f);
+    
+    // Sit them on top of the mound surface
+    float rockY = surfaceY - (rockRadius * 0.15f);
+
+    std::vector<float> rockData = RenderObject::createSphere(4, 5);
+    for (size_t j = 0; j < rockData.size(); j += 8) {
+        rockData[j + 0] *= rockRadius;
+        rockData[j + 1] *= rockRadius;
+        rockData[j + 2] *= rockRadius;
+    }
+
+    RenderObject* rock = new RenderObject(rockData, stoneTexture, 0);
+    rock->setPosition(glm::vec3(rockX, rockY, rockZ));
+    addObject(rock);
+}
 
     
 

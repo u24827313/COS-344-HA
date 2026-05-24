@@ -10,6 +10,7 @@
 #include "src/SkyBox.h"
 #include "src/Hole.h"
 #include "src/Hole01.h"
+#include "src/Hole02.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/MathUtils.h"
@@ -376,9 +377,9 @@ int main()
 
         // Add them to Hole 1
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        hole1->addObject(flagstick);
-        hole1->addObject(flag);
+        Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         course.addHole(std::unique_ptr<Hole>(hole1));
+        course.addHole(std::unique_ptr<Hole>(hole2));
         auto* ball = new RenderObject(
             RenderObject::createSphere(16, 16),
             ballTexture,
