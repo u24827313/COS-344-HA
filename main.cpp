@@ -14,6 +14,7 @@
 #include "src/Hole03.h"
 #include "src/Hole12.h"
 #include "src/Hole13.h"
+#include "src/Hole14.h"
 #include "src/Hole15.h"
 #include "src/Hole16.h"
 #include "src/GolfCourse.h"
