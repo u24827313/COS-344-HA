@@ -12,15 +12,11 @@
 #include "src/Hole01.h"
 #include "src/Hole02.h"
 #include "src/Hole03.h"
-//#include "src/Hole04.h"
-#include "src/Hole14.h"
-#include "src/Hole13.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/ObjectBuilder.h"
 #include "src/MathUtils.h"
 #include "src/drone.h"
-
 
 using namespace glm;
 using namespace std;
@@ -419,6 +415,7 @@ int main()
             "assets/terrain/stone.bmp",
             "assets/terrain/concrete.bmp",
             "assets/terrain/wood.bmp"
+            "assets/terrain/sand.bmp"
         );
 
         std::vector<std::string> facesDay = {
@@ -493,17 +490,20 @@ int main()
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        //Hole04* hole4 = new Hole04(4, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        Hole14* hole14 = new Hole14(14, glm::vec3(30,0,0), glm::vec3(30,0,0));
-        // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
-        //course.addHole(std::unique_ptr<Hole>(hole4));
-        course.addHole(std::unique_ptr<Hole>(hole13));
-        course.addHole(std::unique_ptr<Hole>(hole14));
-        
+        auto* ball = new RenderObject(
+            RenderObject::createSphere(16, 16),
+            ballTexture,
+            objectShader
+        );
+        ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
+        ball->setScale(glm::vec3(0.4f)); 
+        //hole1->addObject(ball);
+        //course.addHole(std::unique_ptr<Hole>(hole1));
+
+        // add course terrain
         course.build();
         course.setShader(programId, objectShader);
 
