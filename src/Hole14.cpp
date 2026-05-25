@@ -39,7 +39,7 @@ void Hole14::design(Terrain& terrain) {
         lowerData[j + 1] *= greenHeight;
         lowerData[j + 2] *= lowerRadius;
 
-        // Re-normalize lighting vectors after scaling (same as Hole03)
+        
         float nx = lowerData[j + 3];
         float nz = lowerData[j + 5];
         float len = sqrtf(nx * nx + nz * nz);
@@ -80,7 +80,7 @@ void Hole14::design(Terrain& terrain) {
     glm::vec3 upperPos = glm::vec3(
         getTee().x,
         getTee().y - (greenHeight / 2.0f),
-        getTee().z + lowerRadius + upperRadius - 1.5f   // overlap so the two read as one shape
+        getTee().z + lowerRadius + upperRadius - 0.5f   // overlap so the two read as one shape
     );
     upperGreen->setPosition(upperPos);
     upperGreen->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -99,6 +99,7 @@ void Hole14::design(Terrain& terrain) {
         getTee().y - (greenHeight / 2.0f),
         (lowerPos.z + upperPos.z) * 0.5f
     ));
+    
     addObject(neck);
 
     
@@ -156,9 +157,8 @@ void Hole14::design(Terrain& terrain) {
     ));
     addObject(entry);
 
-    // =========================================================================
-    // LEFT-SIDE FEATURE (the red blob on the left of the sketch)
-    // A small rocky outcrop — a stone platform with a cluster of rocks on top.
+    
+    // A small rocky outcrop, a stone platform with a cluster of rocks on top.
     // =========================================================================
 
     /*float featureSize = 1.6f;
@@ -227,7 +227,7 @@ void Hole14::design(Terrain& terrain) {
         addObject(rock);
     }
 
-    int numUpperRocks = 15;
+    int numUpperRocks = 10;
     float upperOrbit  = upperRadius + 0.2f;
     for (int i = 0; i < numUpperRocks; ++i) {
         float t = (float)i / numUpperRocks;
@@ -263,8 +263,8 @@ void Hole14::design(Terrain& terrain) {
     golfHole->setScale(glm::vec3(holeRadius, holeDepth, holeRadius));
     golfHole->setPosition(glm::vec3(
         getPin().x,
-        pinSurfaceY - (holeDepth * 0.95f),
-        getPin().z - 0.8f
+        pinSurfaceY - 0.3f,
+        getPin().z
     ));
     addObject(golfHole);
 
@@ -274,7 +274,7 @@ void Hole14::design(Terrain& terrain) {
     std::vector<float> poleData = RenderObject::createCylinder(8);
     RenderObject* flagPole = new RenderObject(poleData, concreteTexture, 0);
     flagPole->setScale(glm::vec3(poleRadius, poleHeight, poleRadius));
-    flagPole->setPosition(glm::vec3(getPin().x, pinSurfaceY, getPin().z - 0.8f));
+    flagPole->setPosition(glm::vec3(getPin().x, pinSurfaceY - 0.2f, getPin().z));
     addObject(flagPole);
 
     // Triangular flag
@@ -291,7 +291,14 @@ void Hole14::design(Terrain& terrain) {
     flag->setPosition(glm::vec3(
         getPin().x + flagLength / 2.0f,
         pinSurfaceY + poleHeight - (flagBottomWidth / 2.0f) - raisedHeightOffset,
-        getPin().z - 0.8f
+        getPin().z
     ));
     addObject(flag);
+    
+    // In Hole14.cpp, after setting positions
+    std::cout << "[Hole14] pinSurfaceY = " << pinSurfaceY << std::endl;
+    std::cout << "[Hole14] Cup position: " << golfHole->getPosition().x << ", " 
+            << golfHole->getPosition().y << ", " << golfHole->getPosition().z << std::endl;
+    std::cout << "[Hole14] Flag pole position: " << flagPole->getPosition().x << ", " 
+            << flagPole->getPosition().y << ", " << flagPole->getPosition().z << std::endl;
 }
