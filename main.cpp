@@ -13,12 +13,14 @@
 #include "src/Hole02.h"
 #include "src/Hole03.h"
 //#include "src/Hole04.h"
+#include "src/Hole14.h"
 #include "src/Hole13.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/ObjectBuilder.h"
 #include "src/MathUtils.h"
 #include "src/drone.h"
+
 
 using namespace glm;
 using namespace std;
@@ -493,14 +495,15 @@ int main()
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
         //Hole04* hole4 = new Hole04(4, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
-
+        Hole14* hole14 = new Hole14(14, glm::vec3(30,0,0), glm::vec3(30,0,0));
         // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
         //course.addHole(std::unique_ptr<Hole>(hole4));
         course.addHole(std::unique_ptr<Hole>(hole13));
-
+        course.addHole(std::unique_ptr<Hole>(hole14));
+        
         course.build();
         course.setShader(programId, objectShader);
 
