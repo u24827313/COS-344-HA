@@ -12,6 +12,7 @@ void Hole18::design(Terrain& terrain) {
     GLuint concreteTexture = loadBMPTexture("assets/terrain/concrete.bmp");
     GLuint sandTexture     = loadBMPTexture("assets/terrain/sand.bmp");
     GLuint woodTexture     = loadBMPTexture("assets/terrain/wood.bmp");
+    GLuint walkwayTexture     = loadBMPTexture("assets/holes/concrete.bmp");
     if (grassTexture == 0 || stoneTexture == 0 || concreteTexture == 0 || sandTexture == 0) {
         return;
     }
@@ -105,29 +106,38 @@ void Hole18::design(Terrain& terrain) {
    
     // SAND BUNKER
     
-    float bunkerWidth  = 2.5f;
+    float bunkerWidth  = 3.0f;
     float bunkerDepth  = 1.8f;
-    float bunkerHeight = 0.05f;
+    float bunkerHeight = 0.35f;
     std::vector<float> bunkerData = RenderObject::createRoundedBox(
         bunkerWidth, bunkerHeight, bunkerDepth, 0.4f, 8
     );
-    RenderObject* bunker = new RenderObject(bunkerData, sandTexture, 0);
+    RenderObject* bunker = new RenderObject(bunkerData, walkwayTexture, 0);
     bunker->setPosition(glm::vec3(
         getTee().x - 2.5f,
         surfaceY + (bunkerHeight / 2.0f) - 0.02f,
         getTee().z - 0.5f
     ));
+    bunker->setRotation(glm::vec3(180.0f, 0.0f, 0.0f));
     addObject(bunker);
 
     auto isInsideAnyGreen = [&](const glm::vec3& pos) {
         float dx, dz;
-        dx = pos.x - mainPos.x;   dz = pos.z - mainPos.z;
-        if (sqrtf(dx*dx + dz*dz) < mainRadius - 0.1f) return true;
-        dx = pos.x - lowerPos.x;  dz = pos.z - lowerPos.z;
-        if (sqrtf(dx*dx + dz*dz) < lowerRadius - 0.1f) return true;
-        dx = pos.x - upperPos.x;  dz = pos.z - upperPos.z;
-        if (sqrtf(dx*dx + dz*dz) < upperRadius - 0.1f) return true;
-        return false;
+    dx = pos.x - mainPos.x;   dz = pos.z - mainPos.z;
+    if (sqrtf(dx*dx + dz*dz) < mainRadius - 0.1f) return true;
+    dx = pos.x - lowerPos.x;  dz = pos.z - lowerPos.z;
+    if (sqrtf(dx*dx + dz*dz) < lowerRadius - 0.1f) return true;
+    dx = pos.x - upperPos.x;  dz = pos.z - upperPos.z;
+    if (sqrtf(dx*dx + dz*dz) < upperRadius - 0.1f) return true;
+    
+    // NEW: also skip if inside the bunker area
+    glm::vec3 bunkerCenter(getTee().x + 2.5f, 0.0f, getTee().z - 0.5f);
+    float bunkerHalfW = 2.5f / 2.0f + 0.3f;   // half width + a small margin
+    float bunkerHalfD = 1.8f / 2.0f + 0.3f;
+    if (fabsf(pos.x - bunkerCenter.x) < bunkerHalfW &&
+        fabsf(pos.z - bunkerCenter.z) < bunkerHalfD) return true;
+    
+    return false;
     };
 
     auto addCylinderRocks = [&](const glm::vec3& center, float orbitRadius, int count) {
