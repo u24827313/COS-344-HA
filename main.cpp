@@ -12,6 +12,12 @@
 #include "src/Hole01.h"
 #include "src/Hole02.h"
 #include "src/Hole03.h"
+#include "src/Hole04.h"
+#include "src/Hole07.h"
+#include "src/Hole08.h"
+#include "src/Hole09.h"
+#include "src/Hole10.h"
+#include "src/Hole11.h"
 #include "src/Hole12.h"
 #include "src/Hole13.h"
 #include "src/Hole14.h"
@@ -171,7 +177,7 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, +float(speed / 10), glm::vec3(1.0, 0.0, 0.0));
+        translation = glm::rotate(translation, +float(speed / 10), glm::vec3(1.0f, 0.0f, 0.0f));
         view = view * translation;
         MVP = makeMVP(model, view, projection);
 
@@ -180,7 +186,26 @@ static void processControls(GLFWwindow* window, mat4 &view, mat4 &model, mat4 &p
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
         mat4 translation = mat4(1.0f);
-        translation = glm::rotate(translation, -float(speed / 10), glm::vec3(1.0, 0.0, 0.0));
+        translation = glm::rotate(translation, -float(speed / 10), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = view * translation;
+        MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x + degrees(speed / 10), drone.rotation.y, drone.rotation.z);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, -float(speed / 10), glm::vec3(0.0f, 0.0f, 1.0f));
+        view = view * translation;
+        MVP = makeMVP(model, view, projection);
+
+        drone.rotation = vec3(drone.rotation.x - degrees(speed / 10), drone.rotation.y, drone.rotation.z);
+    }
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+    {
+        mat4 translation = mat4(1.0f);
+        translation = glm::rotate(translation, +float(speed / 10), glm::vec3(0.0f, 0.0f, 1.0f));
         view = view * translation;
         MVP = makeMVP(model, view, projection);
 
@@ -415,12 +440,11 @@ int main()
         // Base
 
         GolfCourse course(
-            "assets/terrain/sand.bmp",
+            "assets/terrain/grass.bmp",
             "assets/terrain/dirt.bmp",
             "assets/terrain/stone.bmp",
             "assets/terrain/concrete.bmp",
             "assets/terrain/wood.bmp"
-            "assets/terrain/sand.bmp"
         );
 
         std::vector<std::string> facesDay = {
@@ -488,31 +512,108 @@ int main()
 
         // Duplicate Objects
 
+        // One marker per hole, placed at its start
 
+        auto* marker01 = new ObjectBuilder();
+        marker01->clone(marker);
+
+        // Other misc decor
+
+        auto* podium01 = new ObjectBuilder();
+        podium01->clone(podium);
+
+        auto* shade01 = new ObjectBuilder();
+        shade01->clone(shade);
+
+        auto* lamp01 = new ObjectBuilder();
+        lamp01->clone(lamp);
+
+        auto* sign01 = new ObjectBuilder();
+        sign01->clone(signpost);
+
+        // Obstacles
+
+        auto* wall01 = new ObjectBuilder();
+        wall01->clone(wallTower);
+
+        auto* loop01 = new ObjectBuilder();
+        loop01->clone(loop);
+
+        auto* bridge01 = new ObjectBuilder();
+        bridge01->clone(bridge);
+
+        auto* volcano01 = new ObjectBuilder();
+        volcano01->clone(volcano);
 
         // Build Holes        
 
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
-        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole04* hole4 = new Hole04(4, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        //Hole05* hole05 = new Hole05(5, glm::vec3(15,0,-8), glm::vec3(0,0,100));
+        //Hole06* hole06 = new Hole06(6, glm::vec3(15,0,-8), glm::vec3(0,0,100));
+        Hole07* hole7 = new Hole07(3, glm::vec3(25,0,-35), glm::vec3(100,0,-65));
+        Hole08* hole8 = new Hole08(3, glm::vec3(35,0,-25), glm::vec3(200,0,-125));
+        Hole09* hole9 = new Hole09(3, glm::vec3(45,0,-10), glm::vec3(0,0,0));
+        Hole10* hole10 = new Hole10(10, glm::vec3(15,0,-8), glm::vec3(0,0,100));
+        Hole11* hole11 = new Hole11(11, glm::vec3(15,0,-8), glm::vec3(0,0,100));
         Hole12* hole12 = new Hole12(12, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole14* hole14 = new Hole14(14, glm::vec3(30,0,0), glm::vec3(30,0,0));
+        Hole15* hole15 = new Hole15(15,glm::vec3(-30, 0, -10),glm::vec3(-30, 0, -10));
+        Hole16* hole16 = new Hole16(16, glm::vec3(-30, 0, -30),glm::vec3(32, 30, 14.5f));
+        //Hole17* hole17 = new Hole17(17, glm::vec3(15,0,-8), glm::vec3(0,0,100));
+        //Hole18* hole18 = new Hole18(18, glm::vec3(15,0,-8), glm::vec3(0,0,100));
+
+        // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
+        //course.addHole(std::unique_ptr<Hole>(hole4));
+        //course.addHole(std::unique_ptr<Hole>(hole5));
+        //course.addHole(std::unique_ptr<Hole>(hole6));
+        course.addHole(std::unique_ptr<Hole>(hole7));
+        course.addHole(std::unique_ptr<Hole>(hole8));
+        course.addHole(std::unique_ptr<Hole>(hole9));
+        course.addHole(std::unique_ptr<Hole>(hole10));
+        course.addHole(std::unique_ptr<Hole>(hole11));
         course.addHole(std::unique_ptr<Hole>(hole12));
         course.addHole(std::unique_ptr<Hole>(hole13));
-        auto* ball = new RenderObject(
-            RenderObject::createSphere(16, 16),
-            ballTexture,
-            objectShader
-        );
-        ball->setPosition(glm::vec3(1.0f, 0.4f, 100.0f));
-        ball->setScale(glm::vec3(0.4f)); 
-        //hole1->addObject(ball);
-        //course.addHole(std::unique_ptr<Hole>(hole1));
+        course.addHole(std::unique_ptr<Hole>(hole14));
+        course.addHole(std::unique_ptr<Hole>(hole15));
+        course.addHole(std::unique_ptr<Hole>(hole16));
+        //course.addHole(std::unique_ptr<Hole>(hole17));
+        //course.addHole(std::unique_ptr<Hole>(hole18));
 
-        // add course terrain
+        // Add clones, move them
+
+        podium01->addObject(hole1);
+        podium01->setPosition(vec3(0.0f, 0.0f, 5.0f));
+
+        shade01->addObject(hole1);
+        shade01->setPosition(vec3(-7.0f, 0.0f, -15.0f));
+
+        lamp01->addObject(hole1);
+        lamp01->setPosition(vec3(-7.0f, 0.0f, -5.0f));
+
+        sign01->addObject(hole1);
+        sign01->setPosition(vec3(7.0f, 0.0f, 0.0f));
+
+        wall01->addObject(hole1);
+        wall01->setPosition(vec3(-0.1f, -0.2f, -16.0f));
+        wall01->setScale(vec3(0.7f, 0.7f, 0.7f));
+        wall01->setRotation(vec3(0.0f, 45.0f, 0.0f));
+
+        loop01->addObject(hole2);
+        loop01->setPosition(vec3(20.0f, 0.0f, -14.0f));
+
+        bridge01->addObject(hole2);
+        bridge01->setPosition(vec3(20.0f, 0.0f, -24.0f));
+
+        volcano01->addObject(hole2);
+        volcano01->setPosition(vec3(30.0f, -0.5f, 5.0f));
+
         course.build();
         course.setShader(programId, objectShader);
 

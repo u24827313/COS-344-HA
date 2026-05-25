@@ -42,7 +42,7 @@ void ObjectBuilder::setRotation(const glm::vec3 &rDegrees)
 void ObjectBuilder::setScale(const glm::vec3 &s)
 {
     for (auto* obj : objects) {
-        obj->setScale(obj->getScale() * s);  
+        obj->setScale(obj->getScale() + s);  
     }
 }
 

@@ -1,5 +1,4 @@
 #include "GolfCourse.h"
-#include "Hole01.h"
 
 GolfCourse::GolfCourse(const std::string& grassPath,
                        const std::string& sandPath,

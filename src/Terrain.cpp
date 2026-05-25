@@ -358,6 +358,12 @@ void Terrain::render(const float* view4x4, const float* proj4x4, const glm::vec3
     glUniform1i(glGetUniformLocation(shaderProgram, "concreteTex"), 3);
     glUniform1i(glGetUniformLocation(shaderProgram, "woodTex"),     4);
     
+
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+    glBindVertexArray(0);
+
+    
     glUniform1f(glGetUniformLocation(shaderProgram, "worldHalfSize"), worldSize * 0.5f);
 
     
@@ -374,10 +380,6 @@ void Terrain::render(const float* view4x4, const float* proj4x4, const glm::vec3
         packed[i*4 + 3] = bunkers[i].edgeFade;
     }
     glUniform4fv(glGetUniformLocation(shaderProgram, "bunkers"), 32, packed.data());
-
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-    glBindVertexArray(0);
 
     // reset texture bindingds
     for (int i = 0; i < 6; ++i) {
