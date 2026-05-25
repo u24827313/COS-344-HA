@@ -7,10 +7,10 @@
 void Hole16::design(Terrain& terrain) {
     Hole::design(terrain);
 
-    GLuint grassTexture    = loadBMPTexture("assets/holes/grass.bmp");
-    GLuint stoneTexture    = loadBMPTexture("assets/holes/stone.bmp");
-    GLuint concreteTexture = loadBMPTexture("assets/holes/concrete.bmp");
-    GLuint woodTexture     = loadBMPTexture("assets/holes/wood.bmp");
+    GLuint grassTexture    = loadBMPTexture("assets/terrain/grass.bmp");
+    GLuint stoneTexture    = loadBMPTexture("assets/terrain/stone.bmp");
+    GLuint concreteTexture = loadBMPTexture("assets/terrain/concrete.bmp");
+    GLuint woodTexture     = loadBMPTexture("assets/terrain/wood.bmp");
     if (grassTexture == 0 || stoneTexture == 0 || concreteTexture == 0 || woodTexture == 0) {
         return;
     }
