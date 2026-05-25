@@ -23,6 +23,8 @@
 #include "src/Hole14.h"
 #include "src/Hole15.h"
 #include "src/Hole16.h"
+#include "src/Hole17.h"
+#include "src/Hole18.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/ObjectBuilder.h"
@@ -567,6 +569,8 @@ int main()
         Hole16* hole16 = new Hole16(16, glm::vec3(-30, 0, -30),glm::vec3(32, 30, 14.5f));
         //Hole17* hole17 = new Hole17(17, glm::vec3(15,0,-8), glm::vec3(0,0,100));
         //Hole18* hole18 = new Hole18(18, glm::vec3(15,0,-8), glm::vec3(0,0,100));
+        Hole17* hole17 = new Hole17(17, glm::vec3(-20, 0, 10), glm::vec3(0, 0, 0));
+        Hole18* hole18 = new Hole18(18, glm::vec3(-13, 0, 10), glm::vec3(0, 0, 0));
 
         // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
@@ -585,8 +589,8 @@ int main()
         course.addHole(std::unique_ptr<Hole>(hole14));
         course.addHole(std::unique_ptr<Hole>(hole15));
         course.addHole(std::unique_ptr<Hole>(hole16));
-        //course.addHole(std::unique_ptr<Hole>(hole17));
-        //course.addHole(std::unique_ptr<Hole>(hole18));
+        course.addHole(std::unique_ptr<Hole>(hole17));
+        course.addHole(std::unique_ptr<Hole>(hole18));
 
         // Add clones, move them
 
