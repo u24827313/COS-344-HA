@@ -5,9 +5,19 @@
 
 
 class Drone {
+private:
+    unsigned int VAO, VBO, shaderProgram;
+    bool bufferInitialised;
+    int vertexCount;
+    std::vector<float> vertexData;
+
+    void pushBox(const glm::vec3& mn, const glm::vec3& mx);
+    void initBuffer();
 public:
     Drone();
     ~Drone();
+    
+    bool isNightVisionActive = false;
 
     void build();
     void render(const float* view4x4, const float* proj4x4, const glm::vec3& cameraPos, const DirectionalLight& light);
@@ -22,13 +32,6 @@ public:
     // Use these in your main render loop to act as the viewport!
     glm::mat4 getCameraViewMatrix() const;
     glm::mat4 getCameraProjectionMatrix(float aspectRatio) const;
-
-private:
-    unsigned int VAO, VBO, shaderProgram;
-    bool bufferInitialised;
-    int vertexCount;
-    std::vector<float> vertexData;
-
-    void pushBox(const glm::vec3& mn, const glm::vec3& mx);
-    void initBuffer();
+    void toggleNightVision() { isNightVisionActive = !isNightVisionActive; }
+    bool isNightVisionOn() const { return isNightVisionActive; }
 };

@@ -279,6 +279,8 @@ static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
     dir.y = sin(glm::radians(camPitch));
     dir.z = sin(glm::radians(camYaw)) * cos(glm::radians(camPitch));
     cameraFront = glm::normalize(dir);
+
+    
 }
 
 const char *getError()
@@ -522,6 +524,9 @@ int main()
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         float cameraAngle = 0.0f;
         glm::mat4 model(1.0f);
         
@@ -620,21 +625,26 @@ int main()
             if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && currentTime - delay > 0.2)
             {
                 delay = currentTime;
-            
+                nightShader = !nightShader;  // actually toggle the flag
+                drone.isNightVisionActive = nightShader;  // set the drone's night vision flag to match the shader state
+
                 if (nightShader) {
-                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
-                    skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
-                    skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
-                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
-                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl"));    
+                    // Activate night vision: load NV shaders for scene, enable drone NV flag
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/nightview.glsl");
+                    skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_nightview.glsl"));
+                    skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_nightview.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_nightview.glsl"),
+                                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/nightview.glsl"));
+                    
                 } else {
-                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl");
-                    skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
-                    skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_sepia.glsl"));
-                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_sepia.glsl"),
-                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/sepia.glsl")); 
+                    // Revert to the normal fragment shader
+                    programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
+                    skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
+                    skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
+                    course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_fragment.glsl"),
+                                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl"));
+                    
                 }
-                
             }
 
             glfwSwapBuffers(window);
