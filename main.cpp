@@ -15,6 +15,8 @@
 //#include "src/Hole04.h"
 #include "src/Hole14.h"
 #include "src/Hole13.h"
+#include "src/Hole15.h"
+#include "src/Hole16.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/ObjectBuilder.h"
@@ -414,7 +416,7 @@ int main()
         // Base
 
         GolfCourse course(
-            "assets/terrain/grass.bmp",
+            "assets/terrain/sand.bmp",
             "assets/terrain/dirt.bmp",
             "assets/terrain/stone.bmp",
             "assets/terrain/concrete.bmp",
@@ -496,6 +498,8 @@ int main()
         //Hole04* hole4 = new Hole04(4, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole14* hole14 = new Hole14(14, glm::vec3(30,0,0), glm::vec3(30,0,0));
+        Hole15* hole15 = new Hole15(15,glm::vec3(-30, 0, -10),glm::vec3(-30, 0, -10));
+        Hole16* hole16 = new Hole16(16, glm::vec3(-30, 0, -30),glm::vec3(32, 30, 14.5f));
         // Build Course
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
@@ -503,6 +507,8 @@ int main()
         //course.addHole(std::unique_ptr<Hole>(hole4));
         course.addHole(std::unique_ptr<Hole>(hole13));
         course.addHole(std::unique_ptr<Hole>(hole14));
+        course.addHole(std::unique_ptr<Hole>(hole15));
+        course.addHole(std::unique_ptr<Hole>(hole16));
         
         course.build();
         course.setShader(programId, objectShader);
