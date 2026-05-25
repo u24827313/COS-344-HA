@@ -9,11 +9,11 @@ void Hole14::design(Terrain& terrain) {
     Hole::design(terrain);
 
     // Load textures
-    GLuint grassTexture     = loadBMPTexture("assets/holes/grass.bmp");
-    GLuint darkGrassTexture = loadBMPTexture("assets/holes/dirt.bmp");   
-    GLuint stoneTexture     = loadBMPTexture("assets/holes/stone.bmp");
-    GLuint concreteTexture  = loadBMPTexture("assets/holes/concrete.bmp");
-    GLuint woodTexture      = loadBMPTexture("assets/holes/wood.bmp");
+    GLuint grassTexture     = loadBMPTexture("assets/terrain/grass.bmp");
+    GLuint darkGrassTexture = loadBMPTexture("assets/terrain/dirt.bmp");   
+    GLuint stoneTexture     = loadBMPTexture("assets/terrain/stone.bmp");
+    GLuint concreteTexture  = loadBMPTexture("assets/terrain/concrete.bmp");
+    GLuint woodTexture      = loadBMPTexture("assets/terrain/wood.bmp");
     GLuint cobblestoneTexture = loadBMPTexture("assets/holes/cobblestone.bmp");
     GLuint whiteFlag = loadBMPTexture("assets/holes/white.bmp");
 
@@ -33,7 +33,7 @@ void Hole14::design(Terrain& terrain) {
 
     // ---- LOWER (wider) part of the green — a flat cylinder ----
     float lowerRadius = 3.0f;
-    std::vector<float> lowerData = RenderObject::createCylinder(32);
+    std::vector<float> lowerData = RenderObject::createClosedCylinder(32);
     for (size_t j = 0; j < lowerData.size(); j += 8) {
         lowerData[j + 0] *= lowerRadius;
         lowerData[j + 1] *= greenHeight;
@@ -61,7 +61,7 @@ void Hole14::design(Terrain& terrain) {
 
     // ---- UPPER (narrower) part of the green — smaller cylinder, north of lower ----
     float upperRadius = 2.2f;
-    std::vector<float> upperData = RenderObject::createCylinder(32);
+    std::vector<float> upperData = RenderObject::createClosedCylinder(32);
     for (size_t j = 0; j < upperData.size(); j += 8) {
         upperData[j + 0] *= upperRadius;
         upperData[j + 1] *= greenHeight;
