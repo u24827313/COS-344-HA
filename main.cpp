@@ -12,6 +12,8 @@
 #include "src/Hole01.h"
 #include "src/Hole02.h"
 #include "src/Hole03.h"
+#include "src/Hole12.h"
+#include "src/Hole13.h"
 #include "src/GolfCourse.h"
 #include "src/RenderObject.h"
 #include "src/ObjectBuilder.h"
@@ -490,9 +492,13 @@ int main()
         Hole01* hole1 = new Hole01(1, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole02* hole2 = new Hole02(2, glm::vec3(0,0,0), glm::vec3(0,0,100));
         Hole03* hole3 = new Hole03(3, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole13* hole13 = new Hole13(13, glm::vec3(0,0,0), glm::vec3(0,0,100));
+        Hole12* hole12 = new Hole12(12, glm::vec3(0,0,0), glm::vec3(0,0,100));
         course.addHole(std::unique_ptr<Hole>(hole1));
         course.addHole(std::unique_ptr<Hole>(hole2));
         course.addHole(std::unique_ptr<Hole>(hole3));
+        course.addHole(std::unique_ptr<Hole>(hole12));
+        course.addHole(std::unique_ptr<Hole>(hole13));
         auto* ball = new RenderObject(
             RenderObject::createSphere(16, 16),
             ballTexture,
