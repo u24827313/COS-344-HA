@@ -433,3 +433,64 @@ std::vector<float> RenderObject::createTrapezoid(float bottomWidth, float topWid
 
     return vertices;
 }
+
+std::vector<float> RenderObject::createClosedCylinder(int segments) {
+    std::vector<float> data;
+
+    auto pushVert = [&](const float* v) {
+        for (int k = 0; k < 8; ++k) data.push_back(v[k]);
+    };
+
+    // -------- SIDE WALL --------
+    for (int i = 0; i < segments; ++i) {
+        float a0 = (float)i       / segments * 2.0f * (float)M_PI;
+        float a1 = (float)(i + 1) / segments * 2.0f * (float)M_PI;
+        float c0 = cosf(a0), s0 = sinf(a0);
+        float c1 = cosf(a1), s1 = sinf(a1);
+        float u0 = (float)i       / segments;
+        float u1 = (float)(i + 1) / segments;
+
+        float bl[8] = { c0, 0, s0,  c0, 0, s0,  u0, 0 };
+        float br[8] = { c1, 0, s1,  c1, 0, s1,  u1, 0 };
+        float tr[8] = { c1, 1, s1,  c1, 0, s1,  u1, 1 };
+        float tl[8] = { c0, 1, s0,  c0, 0, s0,  u0, 1 };
+
+        pushVert(bl); pushVert(br); pushVert(tr);
+        pushVert(tr); pushVert(tl); pushVert(bl);
+    }
+
+    // -------- TOP CAP (normal pointing +Y) --------
+    for (int i = 0; i < segments; ++i) {
+        float a0 = (float)i       / segments * 2.0f * (float)M_PI;
+        float a1 = (float)(i + 1) / segments * 2.0f * (float)M_PI;
+        float c0 = cosf(a0), s0 = sinf(a0);
+        float c1 = cosf(a1), s1 = sinf(a1);
+
+        // Center vertex of the top disc
+        float center[8]  = { 0, 1, 0,   0, 1, 0,   0.5f, 0.5f };
+        // Edge vertex 1
+        float edge0[8]   = { c0, 1, s0,  0, 1, 0,   0.5f + c0 * 0.5f, 0.5f + s0 * 0.5f };
+        // Edge vertex 2
+        float edge1[8]   = { c1, 1, s1,  0, 1, 0,   0.5f + c1 * 0.5f, 0.5f + s1 * 0.5f };
+
+        // Wind counter-clockwise when viewed from above (so normal faces up)
+        pushVert(center); pushVert(edge0); pushVert(edge1);
+    }
+
+    // -------- BOTTOM CAP (normal pointing -Y) --------
+    for (int i = 0; i < segments; ++i) {
+        float a0 = (float)i       / segments * 2.0f * (float)M_PI;
+        float a1 = (float)(i + 1) / segments * 2.0f * (float)M_PI;
+        float c0 = cosf(a0), s0 = sinf(a0);
+        float c1 = cosf(a1), s1 = sinf(a1);
+
+        float center[8] = { 0, 0, 0,    0, -1, 0,   0.5f, 0.5f };
+        float edge0[8]  = { c0, 0, s0,  0, -1, 0,   0.5f + c0 * 0.5f, 0.5f + s0 * 0.5f };
+        float edge1[8]  = { c1, 0, s1,  0, -1, 0,   0.5f + c1 * 0.5f, 0.5f + s1 * 0.5f };
+
+        // Wind opposite direction so normal faces down
+        pushVert(center); pushVert(edge1); pushVert(edge0);
+    }
+
+    return data;
+}
