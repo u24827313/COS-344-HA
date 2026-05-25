@@ -101,6 +101,7 @@ void Hole13::design(Terrain& terrain) {
         }
 
         RenderObject* rock = new RenderObject(rockData, stoneTexture, 0);
+        // Sits exactly on the right lip edge of Platform 1
         rock->setPosition(glm::vec3(p1InnerX, platformSurfaceY, rockZ));
         addObject(rock);
     }
@@ -132,42 +133,69 @@ void Hole13::design(Terrain& terrain) {
     // =========================================================================
     // --- VERTICAL WOOD BEAMS ALONG THE OUTER EDGES ---
     // =========================================================================
+    
+    // Beam dimensional profile
     float beamThickness = 0.3f; 
-    float beamHeight = 2.0f; 
+    float beamHeight = 2.0f; // Total height of the post
     float beamWidth = 0.3f;
     float beamRounding = 0.02f;
 
+    // Generate a single vertical post mesh layout
     std::vector<float> beamData = RenderObject::createRoundedBox(beamWidth, beamHeight, beamThickness, beamRounding, 4);
+
+
+    // Calculate how deep the beams sink so they "poke out" of the ground gracefully
+    // This leaves about 0.8 units of the beam sticking up above the platform surface
     float beamElevationY = platformSurfaceY - (beamHeight / 2.0f) + 0.8f; 
 
     // --- 1. WOOD BEAMS ALONG OUTER EDGE OF PLATFORM 1 (Running along Z-axis) ---
+    // Outer edge is the -X side of the platform
     float p1OuterX = posZ.x - halfWidth - (beamWidth / 2.0f);
+    
     float p1BeamMinZ = posZ.z + (pLength / 2.0f) - moundOverlap;
-    float p1BeamMaxZ = posX.z - halfWidth; 
+    float p1BeamMaxZ = posX.z - halfWidth; // Extends all the way to the absolute corner outer vertex
 
+    // --- UPDATED: Increased beam count to get a smoother height curve profile ---
     int beamsOnPlatform1 = 15; 
 
     for (int i = 0; i < beamsOnPlatform1; ++i) {
         float t = (float)i / (beamsOnPlatform1 - 1);
         float beamZ = glm::mix(p1BeamMinZ, p1BeamMaxZ, t);
 
+        // =========================================================================
+        // --- WAVE HEIGHT MATHEMATICS ---
+        // =========================================================================
+        // t goes from 0.0 to 1.0. Multiplying by M_PI maps it from 0 to 180 degrees.
+        // sinf() yields a perfect smooth mountain arch curve (0.0 -> 1.0 -> 0.0).
         float waveScale = sinf(t * (float)M_PI); 
-        float maxWaveHeightBonus = 1.2f; 
+
+        // Tweak parameters to adjust the peak amplitude of your wave effect
+        float maxWaveHeightBonus = 1.2f; // The middle beam will rise this many units higher
+        
+        // Calculate the custom dynamic Y position for this specific post
         float dynamicBeamElevationY = beamElevationY + (waveScale * maxWaveHeightBonus);
+        // =========================================================================
 
         RenderObject* beam = new RenderObject(beamData, woodTexture, 0);
+        
+        // --- CHANGED: Passing dynamicBeamElevationY instead of fixed beamElevationY ---
         beam->setPosition(glm::vec3(p1OuterX, dynamicBeamElevationY, beamZ));
         
+        // Give them a tiny bit of random rotation on the Y-axis so they look like hand-placed wooden stakes
         float randomYaw = static_cast<float>(rand() % 15 - 7); 
         beam->setRotation(glm::vec3(0.0f, randomYaw, 0.0f));
+        
         addObject(beam);
     }
 
     // --- 2. WOOD BEAMS ALONG OUTER EDGE OF PLATFORM 2 (Running along X-axis) ---
+    // Outer edge is the -Z side of the platform due to the 90-degree turn
     float p2OuterZ = posX.z - halfWidth - (beamThickness / 2.0f);
+    
     float p2BeamMinX = posZ.x - halfWidth;
     float p2BeamMaxX = posX.x + (p2Length / 2.0f);
 
+    // --- UPDATED: Increased beam count to match the smooth curve resolution of Platform 1 ---
     int beamsOnPlatform2 = 20; 
 
     for (int i = 0; i < beamsOnPlatform2; ++i) {
