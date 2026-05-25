@@ -344,7 +344,7 @@ float mroadAngle = 5.0f * M_PI / 4.0f; // same as road
 glm::vec3 mroadDir(cosf(mroadAngle), 0.0f, sinf(mroadAngle));
 
 // perpendicular (LEFT side of road)
-glm::vec3 leftDir(1*lroadDir.z, 0.0f, 2*lroadDir.x);
+glm::vec3 leftDir(1*lroadDir.z, 0.0f, 3*lroadDir.x);
 
 float lwallSegmentCount = 1;
 float lwallSegmentLength = 1.0f;
@@ -353,7 +353,7 @@ float lwallOffset = 1.0f; // distance from road center
 
 std::vector<float> wallMesh =
     RenderObject::createRoundedBox(
-        20.5f,        // thin wall thickness
+        9.5f,        // thin wall thickness
         lwallHeight,
         lwallSegmentLength,
         roundness,
