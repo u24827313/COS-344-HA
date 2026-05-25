@@ -222,6 +222,8 @@ void Drone::render(const float* view4x4, const float* proj4x4, const glm::vec3& 
     glUniform3fv(glGetUniformLocation(shaderProgram, "lightColour"), 1, glm::value_ptr(light.colour));
     glUniform3fv(glGetUniformLocation(shaderProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
 
+    glUniform1i(glGetUniformLocation(shaderProgram, "isNightVision"), isNightVisionActive ? 1 : 0);
+
     glm::vec3 col(0.9f, 0.9f, 0.95f);
     glUniform3fv(glGetUniformLocation(shaderProgram, "objectColour"), 1, glm::value_ptr(col));
 
