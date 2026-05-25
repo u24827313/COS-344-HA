@@ -307,8 +307,6 @@ static void processMouseMovement(GLFWwindow* w, double xpos, double ypos){
     dir.y = sin(glm::radians(camPitch));
     dir.z = sin(glm::radians(camYaw)) * cos(glm::radians(camPitch));
     cameraFront = glm::normalize(dir);
-
-    
 }
 
 const char *getError()
@@ -482,70 +480,95 @@ int main()
 
         // Build Objects
  
-        auto* flag = new ObjectBuilder();
-        flag->makeFlag(poleTexture, flagTexture, objectShader);
+        auto* flag01 = new ObjectBuilder();
+        flag01->makeFlag(poleTexture, flagTexture, objectShader);
 
-        auto* wallTower = new ObjectBuilder();
-        wallTower->makeWallTower(flagTexture, objectShader);
-
-        auto* loop = new ObjectBuilder();
-        loop->makeLoop(flagTexture, objectShader);
-
-        auto* bridge = new ObjectBuilder();
-        bridge->makeBridge(flagTexture, objectShader);
-
-        auto* volcano = new ObjectBuilder();
-        volcano->makeVolcano(flagTexture, objectShader);
-
-        auto* marker = new ObjectBuilder();
-        marker->makeMarker(flagTexture, objectShader);
-
-        auto* podium = new ObjectBuilder();
-        podium->makePodium(flagTexture, objectShader);
-
-        auto* shade = new ObjectBuilder();
-        shade->makeShade(flagTexture, objectShader);
-
-        auto* lamp = new ObjectBuilder();
-        lamp->makeLamp(flagTexture, objectShader);
-
-        auto* signpost = new ObjectBuilder();
-        signpost->makeSignpost(flagTexture, objectShader);
-
-        // Duplicate Objects
-
-        // One marker per hole, placed at its start
-
-        auto* marker01 = new ObjectBuilder();
-        marker01->clone(marker);
-
-        // Other misc decor
-
-        auto* podium01 = new ObjectBuilder();
-        podium01->clone(podium);
-
-        auto* shade01 = new ObjectBuilder();
-        shade01->clone(shade);
-
-        auto* lamp01 = new ObjectBuilder();
-        lamp01->clone(lamp);
-
-        auto* sign01 = new ObjectBuilder();
-        sign01->clone(signpost);
-
-        // Obstacles
-
-        auto* wall01 = new ObjectBuilder();
-        wall01->clone(wallTower);
+        auto* wallTower01 = new ObjectBuilder();
+        wallTower01->makeWallTower(flagTexture, objectShader);
 
         auto* loop01 = new ObjectBuilder();
-        loop01->clone(loop);
+        loop01->makeLoop(flagTexture, objectShader);
 
         auto* bridge01 = new ObjectBuilder();
-        bridge01->clone(bridge);
+        bridge01->makeBridge(flagTexture, objectShader);
 
         auto* volcano01 = new ObjectBuilder();
-        volcano01->clone(volcano);
+        volcano01->makeVolcano(flagTexture, objectShader);
+
+        auto* marker01 = new ObjectBuilder();
+        marker01->makeMarker(flagTexture, objectShader);
+
+        auto* podium01 = new ObjectBuilder();
+        podium01->makePodium(flagTexture, objectShader);
+
+        auto* shade01 = new ObjectBuilder();
+        shade01->makeShade(flagTexture, objectShader);
+
+        auto* lamp01 = new ObjectBuilder();
+        lamp01->makeLamp(flagTexture, objectShader);
+
+        auto* signpost01 = new ObjectBuilder();
+        signpost01->makeSignpost(flagTexture, objectShader);
+
+        auto* flag02 = new ObjectBuilder();
+        flag02->makeFlag(poleTexture, flagTexture, objectShader);
+
+        auto* wallTower02 = new ObjectBuilder();
+        wallTower02->makeWallTower(flagTexture, objectShader);
+
+        auto* loop02 = new ObjectBuilder();
+        loop02->makeLoop(flagTexture, objectShader);
+
+        auto* bridge02 = new ObjectBuilder();
+        bridge02->makeBridge(flagTexture, objectShader);
+
+        auto* volcano02 = new ObjectBuilder();
+        volcano02->makeVolcano(flagTexture, objectShader);
+
+        auto* marker02 = new ObjectBuilder();
+        marker02->makeMarker(flagTexture, objectShader);
+
+        auto* podium02 = new ObjectBuilder();
+        podium02->makePodium(flagTexture, objectShader);
+
+        auto* shade02 = new ObjectBuilder();
+        shade02->makeShade(flagTexture, objectShader);
+
+        auto* lamp02 = new ObjectBuilder();
+        lamp02->makeLamp(flagTexture, objectShader);
+
+        auto* signpost02 = new ObjectBuilder();
+        signpost02->makeSignpost(flagTexture, objectShader);
+
+        auto* flag03 = new ObjectBuilder();
+        flag03->makeFlag(poleTexture, flagTexture, objectShader);
+
+        auto* wallTower03 = new ObjectBuilder();
+        wallTower03->makeWallTower(flagTexture, objectShader);
+
+        auto* loop03 = new ObjectBuilder();
+        loop03->makeLoop(flagTexture, objectShader);
+
+        auto* bridge03 = new ObjectBuilder();
+        bridge03->makeBridge(flagTexture, objectShader);
+
+        auto* volcano03 = new ObjectBuilder();
+        volcano03->makeVolcano(flagTexture, objectShader);
+
+        auto* marker03 = new ObjectBuilder();
+        marker03->makeMarker(flagTexture, objectShader);
+
+        auto* podium03 = new ObjectBuilder();
+        podium03->makePodium(flagTexture, objectShader);
+
+        auto* shade03 = new ObjectBuilder();
+        shade03->makeShade(flagTexture, objectShader);
+
+        auto* lamp03 = new ObjectBuilder();
+        lamp03->makeLamp(flagTexture, objectShader);
+
+        auto* signpost03 = new ObjectBuilder();
+        signpost03->makeSignpost(flagTexture, objectShader);
 
         // Build Holes        
 
@@ -599,13 +622,13 @@ int main()
         lamp01->addObject(hole1);
         lamp01->setPosition(vec3(-7.0f, 0.0f, -5.0f));
 
-        sign01->addObject(hole1);
-        sign01->setPosition(vec3(7.0f, 0.0f, 0.0f));
+        signpost01->addObject(hole1);
+        signpost01->setPosition(vec3(7.0f, 0.0f, 0.0f));
 
-        wall01->addObject(hole1);
-        wall01->setPosition(vec3(-0.1f, -0.2f, -16.0f));
-        wall01->setScale(vec3(0.7f, 0.7f, 0.7f));
-        wall01->setRotation(vec3(0.0f, 45.0f, 0.0f));
+        wallTower01->addObject(hole1);
+        wallTower01->setPosition(vec3(-0.1f, -0.2f, -16.0f));
+        wallTower01->setScale(vec3(0.7f, 0.7f, 0.7f));
+        wallTower01->setRotation(vec3(0.0f, 45.0f, 0.0f));
 
         loop01->addObject(hole2);
         loop01->setPosition(vec3(20.0f, 0.0f, -14.0f));
@@ -615,6 +638,55 @@ int main()
 
         volcano01->addObject(hole2);
         volcano01->setPosition(vec3(30.0f, -0.5f, 5.0f));
+
+        // Place All Of These
+
+        // *
+        shade02->addObject(hole1);
+        shade02->setPosition(vec3(-7.0f, 0.0f, -15.0f));
+
+        // *
+        lamp02->addObject(hole1);
+        lamp02->setPosition(vec3(-7.0f, 0.0f, -5.0f));
+
+        // *
+        signpost02->addObject(hole1);
+        signpost02->setPosition(vec3(7.0f, 0.0f, 0.0f));
+
+        // *
+        wallTower02->addObject(hole1);
+        wallTower02->setPosition(vec3(-0.1f, -0.2f, -16.0f));
+        wallTower02->setScale(vec3(0.7f, 0.7f, 0.7f));
+
+        // *
+        loop02->addObject(hole2);
+        loop02->setPosition(vec3(20.0f, 0.0f, -14.0f));
+
+        // *
+        bridge02->addObject(hole2);
+        bridge02->setPosition(vec3(20.0f, 0.0f, -24.0f));
+
+        volcano02->addObject(hole2);
+        volcano02->setPosition(vec3(40.0f, -0.5f, 0.0f));
+
+        // *
+        shade03->addObject(hole1);
+        shade03->setPosition(vec3(-7.0f, 0.0f, -15.0f));
+
+        // *
+        lamp03->addObject(hole1);
+        lamp03->setPosition(vec3(-7.0f, 0.0f, -5.0f));
+
+        // *
+        signpost03->addObject(hole1);
+        signpost03->setPosition(vec3(7.0f, 0.0f, 0.0f));
+
+        // *
+        bridge03->addObject(hole2);
+        bridge03->setPosition(vec3(20.0f, 0.0f, -24.0f));
+
+        volcano03->addObject(hole2);
+        volcano03->setPosition(vec3(-30.0f, -0.5f, -30.0f));
 
         course.build();
         course.setShader(programId, objectShader);
@@ -627,9 +699,6 @@ int main()
  
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         float cameraAngle = 0.0f;
         glm::mat4 model(1.0f);
@@ -729,26 +798,23 @@ int main()
             if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS && currentTime - delay > 0.2)
             {
                 delay = currentTime;
-                nightShader = !nightShader;  // actually toggle the flag
-                drone.isNightVisionActive = nightShader;  // set the drone's night vision flag to match the shader state
-
+                nightShader = !nightShader;
+                drone.isNightVisionActive = nightShader;
+            
                 if (nightShader) {
-                    // Activate night vision: load NV shaders for scene, enable drone NV flag
                     programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/nightview.glsl");
                     skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_nightview.glsl"));
                     skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_nightview.glsl"));
                     course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_nightview.glsl"),
-                                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/nightview.glsl"));
-                    
+                                    LoadShaders("shaders/base/vertex.glsl", "shaders/base/nightview.glsl"));    
                 } else {
-                    // Revert to the normal fragment shader
                     programId = LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl");
                     skyboxDay.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
                     skyboxNight.setShader(LoadShaders("shaders/skybox/skybox_vertex.glsl", "shaders/skybox/skybox_fragment.glsl"));
                     course.setShader(LoadShaders("shaders/terrain/terrain_vertex.glsl", "shaders/terrain/terrain_fragment.glsl"),
                                     LoadShaders("shaders/base/vertex.glsl", "shaders/base/fragment.glsl"));
-                    
                 }
+                
             }
 
             glfwSwapBuffers(window);
